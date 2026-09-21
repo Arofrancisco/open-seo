@@ -17,7 +17,9 @@ import {
   AUTUMN_PAID_PLAN_ID,
 } from "@/shared/billing";
 
-const SUPPORT_EMAIL = "ben@openseo.so";
+const SUPPORT_EMAIL = "arofrancisco@planetaprime.com";
+const SUPPORT_WHATSAPP_URL =
+  "https://wa.me/34643854237?text=Hola%2C%20tengo%20una%20duda%20sobre%20mi%20suscripci%C3%B3n%20de%20OpenSEO";
 
 const PLAN_FEATURES = [
   "Keyword research, backlinks, rank tracking, and site audits",
@@ -234,14 +236,23 @@ function SubscribePage() {
               : "Welcome to OpenSEO!"}
         </h1>
         <p className="text-sm text-base-content/60">
-          SEO on your terms. All your SEO tools in one place at a fair price.
+          SEO + GEO sin ataduras, por Planeta Prime.{" "}
+          <a
+            className="underline decoration-dotted underline-offset-4 hover:text-base-content"
+            href="https://seo.planetaprime.com"
+          >
+            seo.planetaprime.com
+          </a>
         </p>
       </div>
 
       <div className="rounded-lg border border-base-300 p-5 space-y-4">
         <div className="flex items-baseline justify-between gap-4">
           <span className="font-semibold">Base Plan</span>
-          <span className="text-lg font-semibold tabular-nums">$10/month</span>
+          {/* Precio fijado a mano — actualizar aquí si cambia el precio en Autumn (base-plan). */}
+          <span className="text-lg font-semibold tabular-nums">
+            $42.99/month
+          </span>
         </div>
 
         <ul className="space-y-2">
@@ -260,7 +271,7 @@ function SubscribePage() {
           <li className="-mt-1 pl-6 text-xs">
             <a
               className="text-base-content/60 underline decoration-base-content/40 decoration-dotted underline-offset-4 transition-colors hover:text-base-content"
-              href="https://openseo.so/pricing"
+              href="https://seo.planetaprime.com"
               target="_blank"
               rel="noreferrer"
               onClick={() =>
@@ -305,7 +316,16 @@ function SubscribePage() {
 
       <div className="text-center space-y-2">
         <p className="text-sm text-base-content/60">
-          Questions? Email {SUPPORT_EMAIL}.
+          Questions? Email {SUPPORT_EMAIL} or{" "}
+          <a
+            className="underline decoration-dotted underline-offset-4 hover:text-base-content"
+            href={SUPPORT_WHATSAPP_URL}
+            target="_blank"
+            rel="noreferrer"
+          >
+            WhatsApp us
+          </a>
+          .
         </p>
         {isUpgradeFlow ? (
           <button
