@@ -19,7 +19,7 @@ import { domainField } from "@/types/schemas/domain";
 // JavaScript beyond the Share button's clipboard handler. JSX so every value
 // from the row is escaped by React, not by hand.
 
-const MARKETING_URL = "https://openseo.so/?utm_source=shared_report";
+const MARKETING_URL = "https://seo.planetaprime.com/?utm_source=shared_report";
 
 const MAX_DESCRIPTION_CHARS = 200;
 

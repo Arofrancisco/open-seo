@@ -47,11 +47,11 @@ export function SearchConsoleOnboardingStep(props: NavigationProps) {
     <div className="space-y-4">
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">
-          Connect Google Search Console now?
+          ¿Conectar Google Search Console ahora?
         </h1>
         <p className="mt-3 text-sm leading-relaxed text-base-content/60">
-          Bring your real clicks and queries into OpenSEO and your AI agent. You
-          can also do this later from the dashboard.
+          Trae tus clics y búsquedas reales a la herramienta y a tu agente de
+          IA. También puedes hacerlo más tarde desde el panel.
         </p>
       </div>
 
@@ -141,13 +141,13 @@ function GscConnect({
         <Checking />
       ) : connectionQuery.isError && !connection ? (
         <div role="alert" className="text-sm">
-          <p>Couldn't check your Google connection.</p>
+          <p>No hemos podido comprobar tu conexión con Google.</p>
           <button
             type="button"
             className="btn btn-ghost btn-sm"
             onClick={() => void connectionQuery.refetch()}
           >
-            Try again
+            Reintentar
           </button>
         </div>
       ) : needsSetup ? (
@@ -158,7 +158,7 @@ function GscConnect({
             <Check className="size-3.5" />
           </span>
           <span className="text-base-content/80">
-            Connected to{" "}
+            Conectado a{" "}
             <span className="font-mono">{connection?.siteUrl}</span>.
           </span>
         </div>
@@ -176,7 +176,7 @@ function GscConnect({
               onSave={() =>
                 selection && !busy && setSiteMutation.mutate(selection)
               }
-              saveLabel="Save and continue"
+              saveLabel="Guardar y continuar"
               renderActions={(saveButton) => (
                 <StepNavigation
                   onNext={onNext}
@@ -202,7 +202,7 @@ function GscConnect({
               ) : (
                 <GoogleGlyph className="size-[18px]" />
               )}
-              {linking ? "Opening Google…" : "Connect with Google"}
+              {linking ? "Abriendo Google…" : "Conectar con Google"}
             </button>
           )}
         </div>
@@ -233,12 +233,12 @@ function StepNavigation({
         className="flex min-h-10 items-center gap-1.5 text-xs text-base-content/60 hover:text-base-content"
         onClick={onBack}
       >
-        <ArrowLeft className="size-3.5" /> Back
+        <ArrowLeft className="size-3.5" /> Atrás
       </button>
       <div className="flex items-center gap-2">
         {connected ? (
           <button type="button" className="btn btn-primary" onClick={onNext}>
-            Continue <ArrowRight className="size-4" />
+            Continuar <ArrowRight className="size-4" />
           </button>
         ) : (
           <button
@@ -246,13 +246,13 @@ function StepNavigation({
             className="btn btn-ghost btn-sm text-base-content/55"
             onClick={onSkip}
           >
-            Skip for now
+            Omitir por ahora
           </button>
         )}
         {!connected &&
           (saveAction ?? (
             <button type="button" className="btn btn-primary btn-sm" disabled>
-              Save and continue
+              Guardar y continuar
             </button>
           ))}
       </div>
@@ -264,7 +264,7 @@ function Checking() {
   return (
     <div className="flex items-center gap-2 text-sm text-base-content/50">
       <span className="loading loading-spinner loading-sm" />
-      Checking…
+      Comprobando…
     </div>
   );
 }

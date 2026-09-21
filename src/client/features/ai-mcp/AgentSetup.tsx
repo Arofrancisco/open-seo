@@ -23,7 +23,7 @@ export function AgentSetup({
     <fieldset disabled={disabled}>
       <div className="mb-8">
         <h1 className="text-2xl font-semibold tracking-tight">
-          Set up your agent
+          Configura tu agente
         </h1>
         <p className="mt-3 text-pretty text-sm leading-relaxed text-base-content/60">
           {AGENT_SETUP_DESCRIPTION}
@@ -40,14 +40,14 @@ export function AgentSetup({
           className="flex min-h-10 items-center gap-1.5 text-xs text-base-content/60 hover:text-base-content"
           onClick={onBack}
         >
-          <ArrowLeft className="size-3.5" /> Back
+          <ArrowLeft className="size-3.5" /> Atrás
         </button>
         <button
           type="button"
           className="btn btn-ghost btn-sm gap-2"
           onClick={() => onComplete()}
         >
-          Skip for now <ArrowRight className="size-4" />
+          Omitir por ahora <ArrowRight className="size-4" />
         </button>
       </div>
     </fieldset>

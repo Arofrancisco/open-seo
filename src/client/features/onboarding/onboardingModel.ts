@@ -7,9 +7,18 @@ export const ONBOARDING_LAST_STEP = 4;
 // Option values below are persisted and used by analytics. Change display copy
 // here instead of renaming those values, so historical answers stay comparable.
 export const ONBOARDING_OPTION_LABELS: Readonly<Record<string, string>> = {
-  "AI workflows with Claude or Codex (MCP)": "AI Workflows (MCP + Skills)",
-  "My own startup or business": "My Own Business",
-  "My employer's website": "My Company's Website",
+  "AI workflows with Claude or Codex (MCP)": "Flujos con IA (MCP + Skills)",
+  "Keyword research": "Investigación de keywords",
+  "Competitor research": "Análisis de competencia",
+  "Backlink analysis": "Análisis de backlinks",
+  "Site audits": "Auditorías de sitio",
+  "Rank tracking": "Seguimiento de posiciones",
+  "Other": "Otro",
+  "My own startup or business": "Mi propio negocio",
+  "My clients": "Clientes de mi agencia",
+  "My employer's website": "La web de mi empresa",
+  "My own side project": "Un proyecto personal",
+  "I'm exploring before choosing a project": "Aún estoy explorando",
 };
 
 export const INTEREST_OPTIONS = [
@@ -43,13 +52,11 @@ export const CLIENT_WEBSITE_COUNT_OPTIONS = [
 // Display order. Keep persisted values stable for attribution metrics.
 export const SOURCE_OPTIONS = [
   "Google",
-  "X / Twitter",
-  "GitHub",
   "Instagram",
-  "YouTube",
-  "Friend or colleague",
-  "AI (Claude, ChatGPT, etc)",
-  "Product Hunt",
+  "LinkedIn",
+  "Comunidad Skool (Emprendedores de Amazon)",
+  "WhatsApp o recomendación directa",
+  "Un colega o amigo",
   "Other",
 ] as const;
 

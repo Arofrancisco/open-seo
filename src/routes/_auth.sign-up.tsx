@@ -25,21 +25,21 @@ import { z } from "zod";
 const signUpSchema = z
   .object({
     name: z.string().trim(),
-    email: z.string().trim().email("Enter a valid email address."),
+    email: z.string().trim().email("Introduce un email válido."),
     password: z
       .string()
       .min(
         HOSTED_PASSWORD_MIN_LENGTH,
-        `Password must be at least ${HOSTED_PASSWORD_MIN_LENGTH} characters.`,
+        `La contraseña debe tener al menos ${HOSTED_PASSWORD_MIN_LENGTH} caracteres.`,
       )
       .max(
         HOSTED_PASSWORD_MAX_LENGTH,
-        `Password must be at most ${HOSTED_PASSWORD_MAX_LENGTH} characters.`,
+        `La contraseña debe tener como máximo ${HOSTED_PASSWORD_MAX_LENGTH} caracteres.`,
       ),
     confirmPassword: z.string(),
   })
   .refine((value) => value.password === value.confirmPassword, {
-    message: "Passwords do not match.",
+    message: "Las contraseñas no coinciden.",
     path: ["confirmPassword"],
   });
 
@@ -75,7 +75,7 @@ function SignUpPage() {
       if (isTurnstileEnabled && !captchaToken) {
         formApi.setErrorMap({
           onSubmit: {
-            form: "Please complete the captcha to continue.",
+            form: "Completa el captcha para continuar.",
             fields: {},
           },
         });
@@ -87,7 +87,7 @@ function SignUpPage() {
           redirect_to: redirectTo,
         });
         const resolvedName =
-          value.name.trim() || email.split("@")[0] || "OpenSEO User";
+          value.name.trim() || email.split("@")[0] || "Usuario";
         const verificationCallbackURL = new URL(
           "/verify-email",
           window.location.origin,
@@ -121,7 +121,7 @@ function SignUpPage() {
           if (isTurnstileEnabled) captcha.reset();
           formApi.setErrorMap({
             onSubmit: {
-              form: result.error.message || "Unable to create account.",
+              form: result.error.message || "No se pudo crear la cuenta.",
               fields: {},
             },
           });
@@ -140,7 +140,7 @@ function SignUpPage() {
         if (isTurnstileEnabled) captcha.reset();
         formApi.setErrorMap({
           onSubmit: {
-            form: "Unable to create account right now. Please try again.",
+            form: "No se pudo crear la cuenta ahora mismo. Inténtalo de nuevo.",
             fields: {},
           },
         });
@@ -150,7 +150,7 @@ function SignUpPage() {
 
   return (
     <AuthPageCard
-      title="Create your account"
+      title="Crea tu cuenta"
       footer={
         isHostedMode ? (
           showEmailForm ? (
@@ -162,40 +162,40 @@ function SignUpPage() {
                 google.clearError();
               }}
             >
-              Back to signup
+              Volver al registro
             </button>
           ) : (
             <div className="space-y-4">
               <p className="text-sm leading-relaxed text-base-content/60">
-                By signing up, you agree to our{" "}
+                Al registrarte, aceptas nuestro{" "}
                 <a
-                  href="https://openseo.so/terms-and-conditions"
+                  href="https://planetaprime.com/aviso-legal/"
                   target="_blank"
                   rel="noreferrer"
                   className="text-base-content underline underline-offset-2 hover:text-base-content/80 transition-colors"
                 >
-                  Terms
+                  Aviso Legal
                 </a>{" "}
-                and{" "}
+                y{" "}
                 <a
-                  href="https://openseo.so/privacy"
+                  href="https://planetaprime.com/aviso-legal/"
                   target="_blank"
                   rel="noreferrer"
                   className="text-base-content underline underline-offset-2 hover:text-base-content/80 transition-colors"
                 >
-                  Privacy Policy
+                  Política de Privacidad
                 </a>
                 .
               </p>
 
               <p className="text-sm text-base-content/50">
-                Already have an account?{" "}
+                ¿Ya tienes una cuenta?{" "}
                 <Link
                   to="/sign-in"
                   search={getSignInSearch(redirectTo)}
                   className="text-base-content underline underline-offset-2 hover:text-base-content/80 transition-colors"
                 >
-                  Sign in
+                  Inicia sesión
                 </Link>
               </p>
             </div>
@@ -206,7 +206,7 @@ function SignUpPage() {
       {!showEmailForm ? (
         <>
           <AuthMethodChooser
-            googleLabel="Continue with Google"
+            googleLabel="Continuar con Google"
             disabled={!isHostedMode}
             isBusy={google.isStarting}
             onContinueWithGoogle={() => {
@@ -238,7 +238,7 @@ function SignUpPage() {
                   <input
                     type="text"
                     className="input input-bordered w-full"
-                    placeholder="Name (optional)..."
+                    placeholder="Nombre (opcional)..."
                     value={field.state.value}
                     onChange={(event) => field.handleChange(event.target.value)}
                     autoComplete="name"
@@ -261,7 +261,7 @@ function SignUpPage() {
                   <input
                     type="email"
                     className="input input-bordered w-full"
-                    placeholder="Email address..."
+                    placeholder="Correo electrónico..."
                     value={field.state.value}
                     onChange={(event) => field.handleChange(event.target.value)}
                     autoComplete="email"
@@ -285,7 +285,7 @@ function SignUpPage() {
                   <input
                     type="password"
                     className="input input-bordered w-full"
-                    placeholder="Password..."
+                    placeholder="Contraseña..."
                     value={field.state.value}
                     onChange={(event) => field.handleChange(event.target.value)}
                     autoComplete="new-password"
@@ -311,7 +311,7 @@ function SignUpPage() {
                   <input
                     type="password"
                     className="input input-bordered w-full"
-                    placeholder="Confirm password..."
+                    placeholder="Confirmar contraseña..."
                     value={field.state.value}
                     onChange={(event) => field.handleChange(event.target.value)}
                     autoComplete="new-password"
@@ -356,7 +356,7 @@ function SignUpPage() {
                       (isTurnstileEnabled && !captcha.hasToken)
                     }
                   >
-                    {isSubmitting ? "Creating account..." : "Create account"}
+                    {isSubmitting ? "Creando cuenta..." : "Crear cuenta"}
                   </button>
                 </>
               );
@@ -396,12 +396,13 @@ function useGoogleSignUp({
 
       if (result.error) {
         setError(
-          result.error.message || "Google sign up is not available right now.",
+          result.error.message ||
+            "El registro con Google no está disponible ahora mismo.",
         );
         setIsStarting(false);
       }
     } catch {
-      setError("Google sign up is not available right now.");
+      setError("El registro con Google no está disponible ahora mismo.");
       setIsStarting(false);
     }
   };
