@@ -80,7 +80,7 @@ function ForgotPasswordPage() {
               title={isSuccess ? "Revisa tu email" : "Recuperar contraseña"}
               helperText={
                 isSuccess
-                  ? `If an account exists for ${submittedEmail}, we sent a reset link.`
+                  ? `Si existe una cuenta para ${submittedEmail}, te hemos enviado un enlace.`
                   : isHostedMode
                     ? "Introduce tu email y te enviaremos un enlace para restablecer la contraseña."
                     : "El restablecimiento de contraseña no está disponible ahora mismo."
@@ -100,8 +100,8 @@ function ForgotPasswordPage() {
               {isSuccess ? (
                 <div className="alert alert-success">
                   <span>
-                    If an account exists for that email, you'll receive password
-                    reset instructions shortly.
+                    Si existe una cuenta con ese email, recibirás las
+                    instrucciones para restablecer la contraseña en breve.
                   </span>
                 </div>
               ) : (
