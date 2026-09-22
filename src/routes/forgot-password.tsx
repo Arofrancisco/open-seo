@@ -12,7 +12,7 @@ import { getSignInSearch, normalizeAuthRedirect } from "@/lib/auth-redirect";
 import { z } from "zod";
 
 const forgotPasswordSchema = z.object({
-  email: z.string().trim().email("Enter a valid email address."),
+  email: z.string().trim().email("Introduce un email válido."),
 });
 
 export const Route = createFileRoute("/forgot-password")({
@@ -45,7 +45,7 @@ function ForgotPasswordPage() {
         if (result.error) {
           formApi.setErrorMap({
             onSubmit: {
-              form: result.error.message || "We couldn't send the reset email.",
+              form: result.error.message || "No hemos podido enviar el email de restablecimiento.",
               fields: {},
             },
           });
@@ -54,7 +54,7 @@ function ForgotPasswordPage() {
       } catch {
         formApi.setErrorMap({
           onSubmit: {
-            form: "We couldn't send the reset email right now. Please try again.",
+            form: "No hemos podido enviar el email ahora mismo. Inténtalo de nuevo.",
             fields: {},
           },
         });
@@ -77,13 +77,13 @@ function ForgotPasswordPage() {
 
           return (
             <AuthPageCard
-              title={isSuccess ? "Check your email" : "Forgot password"}
+              title={isSuccess ? "Revisa tu email" : "Recuperar contraseña"}
               helperText={
                 isSuccess
                   ? `If an account exists for ${submittedEmail}, we sent a reset link.`
                   : isHostedMode
-                    ? "Enter your email and we'll send you a password reset link."
-                    : "Password reset isn't available right now."
+                    ? "Introduce tu email y te enviaremos un enlace para restablecer la contraseña."
+                    : "El restablecimiento de contraseña no está disponible ahora mismo."
               }
               footer={
                 <p className="text-sm">
@@ -92,7 +92,7 @@ function ForgotPasswordPage() {
                     search={getSignInSearch(redirectTo)}
                     className="text-base-content/50 hover:text-base-content transition-colors"
                   >
-                    Back to sign in
+                    Volver a iniciar sesión
                   </Link>
                 </p>
               }
@@ -121,7 +121,7 @@ function ForgotPasswordPage() {
                           <input
                             type="email"
                             className="input input-bordered w-full"
-                            placeholder="Email address..."
+                            placeholder="Correo electrónico..."
                             value={field.state.value}
                             onChange={(event) =>
                               field.handleChange(event.target.value)
@@ -145,7 +145,7 @@ function ForgotPasswordPage() {
                     className="btn btn-soft w-full"
                     disabled={!isHostedMode || isSubmitting}
                   >
-                    {isSubmitting ? "Sending reset link..." : "Send reset link"}
+                    {isSubmitting ? "Enviando enlace..." : "Enviar enlace"}
                   </button>
                 </form>
               )}

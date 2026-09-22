@@ -21,16 +21,16 @@ const resetPasswordSchema = z
       .string()
       .min(
         HOSTED_PASSWORD_MIN_LENGTH,
-        `Password must be at least ${HOSTED_PASSWORD_MIN_LENGTH} characters.`,
+        `La contraseña debe tener al menos ${HOSTED_PASSWORD_MIN_LENGTH} caracteres.`,
       )
       .max(
         HOSTED_PASSWORD_MAX_LENGTH,
-        `Password must be at most ${HOSTED_PASSWORD_MAX_LENGTH} characters.`,
+        `La contraseña debe tener como máximo ${HOSTED_PASSWORD_MAX_LENGTH} caracteres.`,
       ),
     confirmPassword: z.string(),
   })
   .refine((value) => value.password === value.confirmPassword, {
-    message: "Passwords do not match.",
+    message: "Las contraseñas no coinciden.",
     path: ["confirmPassword"],
   });
 
@@ -47,12 +47,12 @@ export const Route = createFileRoute("/reset-password")({
 function getResetPasswordErrorMessage(error: string | undefined) {
   switch ((error ?? "").toLowerCase()) {
     case "invalid_token":
-      return "This reset link is no longer valid. Request a new one to keep going.";
+      return "Este enlace ya no es válido. Solicita uno nuevo para continuar.";
     case "token_expired":
-      return "This reset link has expired. Request a new one to keep going.";
+      return "Este enlace ha caducado. Solicita uno nuevo para continuar.";
     default:
       return error
-        ? "This reset link can't be used anymore. Request a new one and try again."
+        ? "Este enlace ya no se puede usar. Solicita uno nuevo e inténtalo de nuevo."
         : null;
   }
 }
@@ -70,31 +70,31 @@ function getResetPasswordPageCopy({
 }) {
   if (!isHostedMode) {
     return {
-      title: "Reset password",
-      helperText: "Password reset isn't available right now.",
+      title: "Restablecer contraseña",
+      helperText: "El restablecimiento de contraseña no está disponible ahora mismo.",
     };
   }
 
   if (isComplete) {
     return {
-      title: "Password updated",
+      title: "Contraseña actualizada",
       helperText:
-        "Your password has been updated. Sign in with your new password.",
+        "Tu contraseña se ha actualizado. Inicia sesión con la nueva contraseña.",
     };
   }
 
   if (routeError || !hasToken) {
     return {
-      title: "Reset link expired",
+      title: "Enlace caducado",
       helperText:
         routeError ||
-        "This reset link is no longer valid. Request a new one to keep going.",
+        "Este enlace ya no es válido. Solicita uno nuevo para continuar.",
     };
   }
 
   return {
-    title: "Reset password",
-    helperText: "Choose a new password for your account.",
+    title: "Restablecer contraseña",
+    helperText: "Elige una contraseña nueva para tu cuenta.",
   };
 }
 
@@ -116,7 +116,7 @@ function ResetPasswordPage() {
       if (!token) {
         formApi.setErrorMap({
           onSubmit: {
-            form: "This reset link is no longer valid. Request a new one and try again.",
+            form: "Este enlace ya no es válido. Solicita uno nuevo e inténtalo de nuevo.",
             fields: {},
           },
         });
@@ -132,7 +132,7 @@ function ResetPasswordPage() {
         if (result.error) {
           formApi.setErrorMap({
             onSubmit: {
-              form: "This reset link is no longer valid. Request a new one and try again.",
+              form: "Este enlace ya no es válido. Solicita uno nuevo e inténtalo de nuevo.",
               fields: {},
             },
           });
@@ -141,7 +141,7 @@ function ResetPasswordPage() {
       } catch {
         formApi.setErrorMap({
           onSubmit: {
-            form: "We couldn't update your password right now. Please try again.",
+            form: "No hemos podido actualizar tu contraseña ahora mismo. Inténtalo de nuevo.",
             fields: {},
           },
         });
@@ -178,7 +178,7 @@ function ResetPasswordPage() {
                     search={getSignInSearch(redirectTo)}
                     className="text-base-content/50 hover:text-base-content transition-colors"
                   >
-                    Sign in
+                    Iniciar sesión
                   </Link>
                 </p>
               }
@@ -192,7 +192,7 @@ function ResetPasswordPage() {
                   }
                   className="btn btn-soft w-full"
                 >
-                  Continue to sign in
+                  Ir a iniciar sesión
                 </a>
               ) : routeError || !token ? (
                 <Link
@@ -200,7 +200,7 @@ function ResetPasswordPage() {
                   search={getSignInSearch(redirectTo)}
                   className="btn btn-soft w-full"
                 >
-                  Request a new reset link
+                  Solicitar un enlace nuevo
                 </Link>
               ) : (
                 <form
@@ -219,7 +219,7 @@ function ResetPasswordPage() {
                           <input
                             type="password"
                             className="input input-bordered w-full"
-                            placeholder="New password..."
+                            placeholder="Nueva contraseña..."
                             value={field.state.value}
                             onChange={(event) =>
                               field.handleChange(event.target.value)
@@ -246,7 +246,7 @@ function ResetPasswordPage() {
                           <input
                             type="password"
                             className="input input-bordered w-full"
-                            placeholder="Confirm new password..."
+                            placeholder="Confirmar nueva contraseña..."
                             value={field.state.value}
                             onChange={(event) =>
                               field.handleChange(event.target.value)
@@ -271,7 +271,7 @@ function ResetPasswordPage() {
                     className="btn btn-soft w-full"
                     disabled={isSubmitting}
                   >
-                    {isSubmitting ? "Updating password..." : "Update password"}
+                    {isSubmitting ? "Actualizando..." : "Actualizar contraseña"}
                   </button>
                 </form>
               )}
