@@ -109,6 +109,34 @@ export async function upsertHostedSignupContact({
   });
 }
 
+export async function sendHostedWelcomeEmail({
+  email,
+  name,
+}: {
+  email: string;
+  name?: string | null;
+}) {
+  // Optional: unlike verification/reset, a missing template just skips the
+  // send instead of breaking sign-up (welcome email is a nice-to-have, not
+  // part of the auth flow).
+  const apiKey = getOptionalEnv("LOOPS_API_KEY");
+  const templateId = getOptionalEnv("LOOPS_TRANSACTIONAL_WELCOME_ID");
+
+  if (!apiKey || !templateId) {
+    return;
+  }
+
+  await sendLoopsTransactionalEmail({
+    apiKey,
+    email,
+    transactionalId: templateId,
+    dataVariables: {
+      appName: "OpenSEO",
+      firstName: getContactNameParts(name).firstName ?? "",
+    },
+  });
+}
+
 export async function sendHostedVerificationEmail({
   email,
   confirmationUrl,
