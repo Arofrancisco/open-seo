@@ -22,10 +22,10 @@ const SUPPORT_WHATSAPP_URL =
   "https://wa.me/34643854237?text=Hola%2C%20tengo%20una%20duda%20sobre%20mi%20suscripci%C3%B3n%20de%20OpenSEO";
 
 const PLAN_FEATURES = [
-  "Keyword research, backlinks, rank tracking, and site audits",
-  "MCP server and agent skills for Claude, Cursor, and ChatGPT",
-  "Google Search Console Integration",
-  "Includes $10.00 of Usage Credits each month",
+  "Keyword research, backlinks, seguimiento de posiciones y auditorías de sitio",
+  "Servidor MCP y skills de agente para Claude, Cursor y ChatGPT",
+  "Integración con Google Search Console",
+  "Incluye 10.000 créditos de uso cada mes",
 ];
 
 // How long the post-checkout "finalizing" screen polls Autumn before giving
@@ -230,10 +230,10 @@ function SubscribePage() {
         />
         <h1 className="text-xl font-semibold">
           {isUpgradeFlow
-            ? "Upgrade your plan"
+            ? "Mejora tu plan"
             : firstName
-              ? `Welcome to OpenSEO, ${firstName}!`
-              : "Welcome to OpenSEO!"}
+              ? `¡Bienvenido, ${firstName}!`
+              : "¡Bienvenido!"}
         </h1>
         <p className="text-sm text-base-content/60">
           SEO + GEO sin ataduras, por Planeta Prime.{" "}
@@ -248,10 +248,10 @@ function SubscribePage() {
 
       <div className="rounded-lg border border-base-300 p-5 space-y-4">
         <div className="flex items-baseline justify-between gap-4">
-          <span className="font-semibold">Base Plan</span>
+          <span className="font-semibold">Plan Base</span>
           {/* Precio fijado a mano — actualizar aquí si cambia el precio en Autumn (base-plan). */}
           <span className="text-lg font-semibold tabular-nums">
-            $42.99/month
+            39,99 €/mes
           </span>
         </div>
 
@@ -278,7 +278,7 @@ function SubscribePage() {
                 captureClientEvent("billing:pricing_estimator_click")
               }
             >
-              How far do usage credits go?{" "}
+              ¿Para cuánto dan los créditos?{" "}
               <span aria-hidden="true">&#8599;</span>
             </a>
           </li>
@@ -292,38 +292,38 @@ function SubscribePage() {
             disabled={isAttaching}
             onClick={() => void handleSubscribe()}
           >
-            {isAttaching ? "Redirecting..." : "Subscribe"}
+            {isAttaching ? "Redirigiendo..." : "Suscribirse"}
           </button>
         ) : (
           <p className="text-sm text-base-content/60">
-            Only the organization owner can subscribe. Ask them to upgrade this
-            organization.
+            Solo el propietario de la organización puede suscribirse. Pídele que
+            mejore el plan.
           </p>
         )}
 
         <p className="text-center text-xs text-base-content/50">
           <span
             className="tooltip before:max-w-60 before:whitespace-normal"
-            data-tip={`Not for you yet? Email ${SUPPORT_EMAIL} within 30 days of your charge and we'll refund your subscription.`}
+            data-tip={`¿No es para ti? Escribe a ${SUPPORT_EMAIL} en los 30 días siguientes al cobro y te devolvemos la suscripción.`}
           >
             <span className="cursor-help underline decoration-dotted">
-              30-day money-back guarantee
+              Garantía de devolución de 30 días
             </span>
           </span>
-          . Cancel anytime. Powered by Stripe.
+          . Cancela cuando quieras. Pago seguro con Stripe.
         </p>
       </div>
 
       <div className="text-center space-y-2">
         <p className="text-sm text-base-content/60">
-          Questions? Email {SUPPORT_EMAIL} or{" "}
+          ¿Dudas? Escribe a {SUPPORT_EMAIL} o{" "}
           <a
             className="underline decoration-dotted underline-offset-4 hover:text-base-content"
             href={SUPPORT_WHATSAPP_URL}
             target="_blank"
             rel="noreferrer"
           >
-            WhatsApp us
+            por WhatsApp
           </a>
           .
         </p>
@@ -334,7 +334,7 @@ function SubscribePage() {
             onClick={() => void navigate({ to: "/", replace: true })}
           >
             <ArrowRight className="size-3.5 rotate-180" />
-            Back to app
+            Volver a la app
           </button>
         ) : null}
       </div>
