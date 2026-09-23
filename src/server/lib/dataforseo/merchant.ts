@@ -35,6 +35,8 @@ function postedTaskId<T extends DataforseoTaskLike & { id?: string }>(
   return { data: task.id, billing: buildTaskBilling(task) };
 }
 
+type AmazonEndpoint = "asin" | "sellers" | "products";
+
 type AmazonTaskInput = {
   asin: string;
   locationCode: number;
@@ -56,7 +58,7 @@ export function postAmazonSellersTask(
 }
 
 async function postAmazonTask(
-  endpoint: "asin" | "sellers",
+  endpoint: AmazonEndpoint,
   input: AmazonTaskInput,
 ): Promise<DataforseoApiResponse<string>> {
   return postedTaskId(
@@ -165,7 +167,7 @@ type CompletedAmazonTask =
  * seam would charge twice — same pattern as fetchBusinessDataTaskResult.
  */
 async function collectAmazonTask(
-  endpoint: "asin" | "sellers",
+  endpoint: AmazonEndpoint,
   taskId: string,
 ): Promise<CompletedAmazonTask> {
   const response = await dataforseoGet<DataforseoItemsTask<unknown>>(
@@ -340,5 +342,96 @@ export async function fetchAmazonSellersTaskResult(input: {
   return {
     status: "completed",
     result: { asin: input.asin, title, offers },
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Amazon search results (Products endpoint) — where an ASIN ranks for a
+// keyword. One task = one SERP of up to 100 results, billed at task_post.
+// ---------------------------------------------------------------------------
+
+const AMAZON_SERP_DEPTH = 100;
+
+export function postAmazonProductsTask(
+  input: Omit<AmazonTaskInput, "asin"> & { keyword: string },
+): Promise<DataforseoApiResponse<string>> {
+  return dataforseoPost<DataforseoTaskLike & { id?: string }>(
+    "/v3/merchant/amazon/products/task_post",
+    [
+      {
+        keyword: input.keyword,
+        location_code: input.locationCode,
+        language_code: input.languageCode,
+        se_domain: input.seDomain,
+        depth: AMAZON_SERP_DEPTH,
+      },
+    ],
+    NO_RETRY,
+  ).then(postedTaskId);
+}
+
+const amazonSerpItemSchema = z
+  .object({
+    type: z.string(),
+    rank_group: nullableNumber,
+    data_asin: nullableString,
+  })
+  .passthrough();
+
+export type AmazonKeywordRank = {
+  /** 1-based among organic results; null when not in the scanned results. */
+  organicPosition: number | null;
+  sponsoredPosition: number | null;
+  organicResultsScanned: number;
+};
+
+export type AmazonProductsTaskOutcome = AmazonTaskOutcome<AmazonKeywordRank>;
+
+export async function fetchAmazonProductsRank(input: {
+  taskId: string;
+  asin: string;
+}): Promise<AmazonProductsTaskOutcome> {
+  const collected = await collectAmazonTask("products", input.taskId);
+  if (!collected.done) {
+    // No results for the keyword still counts as a finished check.
+    return collected.outcome.status === "not_found"
+      ? {
+          status: "completed",
+          result: {
+            organicPosition: null,
+            sponsoredPosition: null,
+            organicResultsScanned: 0,
+          },
+        }
+      : collected.outcome;
+  }
+
+  const first = collected.task.result?.[0];
+  const rawItems = Array.isArray(first?.items) ? first.items : [];
+  const items = rawItems.flatMap((raw) => {
+    const parsed = amazonSerpItemSchema.safeParse(raw);
+    return parsed.success ? [parsed.data] : [];
+  });
+  const asin = input.asin.toUpperCase();
+
+  // Positions are counted within each list rather than trusting rank_group,
+  // so gaps from unparsed items can't shift the reported position.
+  const positionIn = (type: string) => {
+    const list = items.filter((item) => item.type === type);
+    const index = list.findIndex(
+      (item) => item.data_asin?.toUpperCase() === asin,
+    );
+    return { position: index === -1 ? null : index + 1, count: list.length };
+  };
+
+  const organic = positionIn("amazon_serp");
+  const sponsored = positionIn("amazon_paid");
+  return {
+    status: "completed",
+    result: {
+      organicPosition: organic.position,
+      sponsoredPosition: sponsored.position,
+      organicResultsScanned: organic.count,
+    },
   };
 }

@@ -22,6 +22,7 @@ import {
 } from "@/server/lib/dataforseo/business";
 import {
   postAmazonAsinTask,
+  postAmazonProductsTask,
   postAmazonSellersTask,
 } from "@/server/lib/dataforseo/merchant";
 import {
@@ -107,6 +108,7 @@ export function createDataforseoClient(customer: BillingCustomerContext) {
       // through fetchAmazonAsinTaskResult (see index.ts).
       asinTaskPost: meter(customer, postAmazonAsinTask, "amazon"),
       sellersTaskPost: meter(customer, postAmazonSellersTask, "amazon"),
+      productsTaskPost: meter(customer, postAmazonProductsTask, "amazon"),
     },
     backlinks: {
       summary: meter(customer, fetchBacklinksSummary),

@@ -58,6 +58,7 @@ import { Route as ProjectPProjectIdContextRouteImport } from './routes/_project/
 import { Route as ProjectPProjectIdBrandLookupRouteImport } from './routes/_project/p/$projectId/brand-lookup'
 import { Route as ProjectPProjectIdBacklinksRouteImport } from './routes/_project/p/$projectId/backlinks'
 import { Route as ProjectPProjectIdAuditRouteImport } from './routes/_project/p/$projectId/audit'
+import { Route as ProjectPProjectIdAmazonRankRouteImport } from './routes/_project/p/$projectId/amazon-rank'
 import { Route as ProjectPProjectIdAmazonAsinRouteImport } from './routes/_project/p/$projectId/amazon-asin'
 import { Route as ProjectPProjectIdSettingsIndexRouteImport } from './routes/_project/p/$projectId/settings/index'
 import { Route as ProjectPProjectIdReportsIndexRouteImport } from './routes/_project/p/$projectId/reports/index'
@@ -322,6 +323,12 @@ const ProjectPProjectIdAuditRoute = ProjectPProjectIdAuditRouteImport.update({
   path: '/audit',
   getParentRoute: () => ProjectPProjectIdRouteRoute,
 } as any)
+const ProjectPProjectIdAmazonRankRoute =
+  ProjectPProjectIdAmazonRankRouteImport.update({
+    id: '/amazon-rank',
+    path: '/amazon-rank',
+    getParentRoute: () => ProjectPProjectIdRouteRoute,
+  } as any)
 const ProjectPProjectIdAmazonAsinRoute =
   ProjectPProjectIdAmazonAsinRouteImport.update({
     id: '/amazon-asin',
@@ -421,6 +428,7 @@ export interface FileRoutesByFullPath {
   '/onboarding/': typeof AuthenticatedOnboardingIndexRoute
   '/s/$token/': typeof STokenIndexRoute
   '/p/$projectId/amazon-asin': typeof ProjectPProjectIdAmazonAsinRoute
+  '/p/$projectId/amazon-rank': typeof ProjectPProjectIdAmazonRankRoute
   '/p/$projectId/audit': typeof ProjectPProjectIdAuditRouteWithChildren
   '/p/$projectId/backlinks': typeof ProjectPProjectIdBacklinksRoute
   '/p/$projectId/brand-lookup': typeof ProjectPProjectIdBrandLookupRoute
@@ -477,6 +485,7 @@ export interface FileRoutesByTo {
   '/onboarding': typeof AuthenticatedOnboardingIndexRoute
   '/s/$token': typeof STokenIndexRoute
   '/p/$projectId/amazon-asin': typeof ProjectPProjectIdAmazonAsinRoute
+  '/p/$projectId/amazon-rank': typeof ProjectPProjectIdAmazonRankRoute
   '/p/$projectId/backlinks': typeof ProjectPProjectIdBacklinksRoute
   '/p/$projectId/brand-lookup': typeof ProjectPProjectIdBrandLookupRoute
   '/p/$projectId/context': typeof ProjectPProjectIdContextRoute
@@ -537,6 +546,7 @@ export interface FileRoutesById {
   '/_authenticated/onboarding/': typeof AuthenticatedOnboardingIndexRoute
   '/s/$token/': typeof STokenIndexRoute
   '/_project/p/$projectId/amazon-asin': typeof ProjectPProjectIdAmazonAsinRoute
+  '/_project/p/$projectId/amazon-rank': typeof ProjectPProjectIdAmazonRankRoute
   '/_project/p/$projectId/audit': typeof ProjectPProjectIdAuditRouteWithChildren
   '/_project/p/$projectId/backlinks': typeof ProjectPProjectIdBacklinksRoute
   '/_project/p/$projectId/brand-lookup': typeof ProjectPProjectIdBrandLookupRoute
@@ -597,6 +607,7 @@ export interface FileRouteTypes {
     | '/onboarding/'
     | '/s/$token/'
     | '/p/$projectId/amazon-asin'
+    | '/p/$projectId/amazon-rank'
     | '/p/$projectId/audit'
     | '/p/$projectId/backlinks'
     | '/p/$projectId/brand-lookup'
@@ -653,6 +664,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/s/$token'
     | '/p/$projectId/amazon-asin'
+    | '/p/$projectId/amazon-rank'
     | '/p/$projectId/backlinks'
     | '/p/$projectId/brand-lookup'
     | '/p/$projectId/context'
@@ -712,6 +724,7 @@ export interface FileRouteTypes {
     | '/_authenticated/onboarding/'
     | '/s/$token/'
     | '/_project/p/$projectId/amazon-asin'
+    | '/_project/p/$projectId/amazon-rank'
     | '/_project/p/$projectId/audit'
     | '/_project/p/$projectId/backlinks'
     | '/_project/p/$projectId/brand-lookup'
@@ -1106,6 +1119,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectPProjectIdAuditRouteImport
       parentRoute: typeof ProjectPProjectIdRouteRoute
     }
+    '/_project/p/$projectId/amazon-rank': {
+      id: '/_project/p/$projectId/amazon-rank'
+      path: '/amazon-rank'
+      fullPath: '/p/$projectId/amazon-rank'
+      preLoaderRoute: typeof ProjectPProjectIdAmazonRankRouteImport
+      parentRoute: typeof ProjectPProjectIdRouteRoute
+    }
     '/_project/p/$projectId/amazon-asin': {
       id: '/_project/p/$projectId/amazon-asin'
       path: '/amazon-asin'
@@ -1285,6 +1305,7 @@ const ProjectPProjectIdSettingsRouteWithChildren =
 
 interface ProjectPProjectIdRouteRouteChildren {
   ProjectPProjectIdAmazonAsinRoute: typeof ProjectPProjectIdAmazonAsinRoute
+  ProjectPProjectIdAmazonRankRoute: typeof ProjectPProjectIdAmazonRankRoute
   ProjectPProjectIdAuditRoute: typeof ProjectPProjectIdAuditRouteWithChildren
   ProjectPProjectIdBacklinksRoute: typeof ProjectPProjectIdBacklinksRoute
   ProjectPProjectIdBrandLookupRoute: typeof ProjectPProjectIdBrandLookupRoute
@@ -1306,6 +1327,7 @@ interface ProjectPProjectIdRouteRouteChildren {
 const ProjectPProjectIdRouteRouteChildren: ProjectPProjectIdRouteRouteChildren =
   {
     ProjectPProjectIdAmazonAsinRoute: ProjectPProjectIdAmazonAsinRoute,
+    ProjectPProjectIdAmazonRankRoute: ProjectPProjectIdAmazonRankRoute,
     ProjectPProjectIdAuditRoute: ProjectPProjectIdAuditRouteWithChildren,
     ProjectPProjectIdBacklinksRoute: ProjectPProjectIdBacklinksRoute,
     ProjectPProjectIdBrandLookupRoute: ProjectPProjectIdBrandLookupRoute,

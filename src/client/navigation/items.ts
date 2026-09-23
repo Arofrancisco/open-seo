@@ -6,6 +6,7 @@ import {
   FileText,
   Globe,
   LayoutDashboard,
+  ListOrdered,
   Link2,
   MessageSquare,
   PackageSearch,
@@ -39,6 +40,11 @@ const projectNavItems = [
     to: "/p/$projectId/rank-tracking" as const,
     label: "Rank Tracking",
     icon: TrendingUp,
+  },
+  {
+    to: "/p/$projectId/amazon-rank" as const,
+    label: "Amazon Rank Tracking",
+    icon: ListOrdered,
   },
   {
     to: "/p/$projectId/search-performance" as const,
@@ -140,6 +146,7 @@ export function getProjectNavGroups(projectId: string) {
       items: [
         byPath("/p/$projectId/search-performance"),
         byPath("/p/$projectId/rank-tracking"),
+        byPath("/p/$projectId/amazon-rank"),
         byPath("/p/$projectId/saved"),
         byPath("/p/$projectId/audit"),
       ],
