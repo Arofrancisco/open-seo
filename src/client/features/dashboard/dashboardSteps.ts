@@ -10,39 +10,39 @@ export const setupSteps: {
 }[] = [
   {
     id: "domain",
-    label: "Add your website",
-    detail: "Set the website and country for this project.",
+    label: "Añade tu web",
+    detail: "Configura la web y el país de este proyecto.",
     icon: Globe,
   },
   {
     id: "project",
-    label: "Working on multiple websites?",
+    label: "¿Trabajas con varias webs?",
     detail:
-      "Create another project, or let your AI agent set up a list of sites.",
+      "Crea otro proyecto, o deja que tu agente de IA configure una lista de sitios.",
     icon: FolderPlus,
   },
   {
     id: "competitor",
-    label: "Explore a competitor",
-    detail: "Find topics and links worth learning from.",
+    label: "Explora a un competidor",
+    detail: "Encuentra temas y enlaces de los que aprender.",
     icon: Search,
   },
   {
     id: "mcp",
-    label: "Connect your AI agent",
-    detail: "Use OpenSEO inside Claude or your favorite agent.",
+    label: "Conecta tu agente de IA",
+    detail: "Usa OpenSEO desde Claude o tu agente favorito.",
     icon: Bot,
   },
   {
     id: "gsc",
-    label: "Connect Search Console",
-    detail: "Bring your real clicks and queries into view.",
+    label: "Conecta Search Console",
+    detail: "Trae tus clics y búsquedas reales a la vista.",
     icon: Search,
   },
   {
     id: "team",
-    label: "Invite a teammate",
-    detail: "Share the work, or keep things solo for now.",
+    label: "Invita a un compañero",
+    detail: "Comparte el trabajo, o sigue en solitario por ahora.",
     icon: Users,
   },
 ];

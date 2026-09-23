@@ -60,7 +60,7 @@ function SessionsTooltip({
         {label ? formatTrendDay(label) : ""}
       </p>
       <p className="text-sm font-medium tabular-nums">
-        {formatCount(payload[0].value)} sessions
+        {formatCount(payload[0].value)} sesiones
       </p>
     </div>
   );
@@ -89,8 +89,8 @@ export function Ga4Card({
 
   return (
     <CardShell
-      title="Organic traffic"
-      stamp="Google Analytics · last 28 days"
+      title="Tráfico orgánico"
+      stamp="Google Analytics · últimos 28 días"
       action={
         <Link
           to="/p/$projectId/settings"
@@ -98,7 +98,7 @@ export function Ga4Card({
           hash="google-analytics"
           className={moreDetailsClass}
         >
-          Manage
+          Gestionar
         </Link>
       }
     >
@@ -113,20 +113,22 @@ export function Ga4Card({
         </div>
       ) : reportQuery.isError ? (
         <p className="text-sm text-base-content/60">
-          Couldn&rsquo;t load Google Analytics data. Try again shortly.
+          No hemos podido cargar los datos de Google Analytics. Inténtalo de
+          nuevo en un momento.
         </p>
       ) : report?.connected ? (
         // Covers null (no report row) and 0: a zero-session period would
         // otherwise render an all-zero flatline chart in an empty box.
         !report.totals.sessions ? (
           <p className="text-sm text-base-content/60">
-            No organic search traffic recorded in the last 28 days yet.
+            Aún no hay tráfico de búsqueda orgánico registrado en los últimos
+            28 días.
           </p>
         ) : (
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <Stat
-                label="Sessions"
+                label="Sesiones"
                 value={statValue(report.totals.sessions, formatCount)}
                 sub={statDelta(
                   report.totals.sessions,
@@ -134,7 +136,7 @@ export function Ga4Card({
                 )}
               />
               <Stat
-                label="Active users"
+                label="Usuarios activos"
                 value={statValue(report.totals.activeUsers, formatCount)}
                 sub={statDelta(
                   report.totals.activeUsers,
@@ -142,11 +144,11 @@ export function Ga4Card({
                 )}
               />
               <Stat
-                label="Engagement rate"
+                label="Tasa de interacción"
                 value={statValue(report.totals.engagementRate, formatCtr)}
               />
               <Stat
-                label="Key events"
+                label="Eventos clave"
                 value={statValue(report.totals.keyEvents, formatCount)}
                 sub={statDelta(
                   report.totals.keyEvents,

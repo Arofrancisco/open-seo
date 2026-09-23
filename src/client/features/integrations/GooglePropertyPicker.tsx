@@ -29,7 +29,7 @@ type SecondaryAction = {
 };
 
 function accountLabel(account: Account) {
-  return account.email ?? `Google account · ${account.accountId.slice(-6)}`;
+  return account.email ?? `Cuenta de Google · ${account.accountId.slice(-6)}`;
 }
 
 export function GooglePropertyPicker({
@@ -43,7 +43,7 @@ export function GooglePropertyPicker({
   onSelect,
   onSave,
   saving,
-  saveLabel = "Save property",
+  saveLabel = "Guardar propiedad",
   onRetry,
   onReconnect,
   secondaryAction,
@@ -111,7 +111,7 @@ export function GooglePropertyPicker({
       onClick={onSave}
       disabled={!canSave || saving}
     >
-      {saving ? "Saving…" : saveLabel}
+      {saving ? "Guardando…" : saveLabel}
     </button>
   );
   return (
@@ -130,7 +130,7 @@ export function GooglePropertyPicker({
       ) : null}
       <div>
         <p className="mb-2 text-sm font-medium">
-          {readOnly ? "Manage Google accounts" : "Choose property"}
+          {readOnly ? "Gestionar cuentas de Google" : "Elegir propiedad"}
         </p>
         <button
           ref={trigger}
@@ -146,7 +146,7 @@ export function GooglePropertyPicker({
         >
           <span className="min-w-0">
             <span className="block truncate">
-              {selected?.name ?? "Select a property…"}
+              {selected?.name ?? "Selecciona una propiedad…"}
             </span>
             {selectedAccount ? (
               <span className="mt-0.5 block truncate text-xs text-base-content/50">
@@ -160,7 +160,7 @@ export function GooglePropertyPicker({
           <div
             id={panelId}
             role="region"
-            aria-label="Google properties"
+            aria-label="Propiedades de Google"
             className="mt-2 overflow-hidden rounded-lg border border-base-300 bg-base-100 shadow-sm"
             onKeyDown={(event) => handlePropertyKeyDown(event, close)}
           >
@@ -169,8 +169,8 @@ export function GooglePropertyPicker({
               <input
                 autoFocus
                 type="search"
-                aria-label="Search properties or accounts"
-                placeholder="Search properties or accounts…"
+                aria-label="Buscar propiedades o cuentas"
+                placeholder="Buscar propiedades o cuentas…"
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 className="min-w-0 w-full bg-transparent text-sm outline-none"
@@ -183,17 +183,17 @@ export function GooglePropertyPicker({
                   className="flex items-center gap-2 p-3 text-sm text-base-content/60"
                 >
                   <span className="loading loading-spinner loading-xs" />
-                  Loading properties…
+                  Cargando propiedades…
                 </p>
               ) : error ? (
                 <div role="alert" className="p-3 text-sm">
-                  <p className="text-error">Couldn't load properties.</p>
+                  <p className="text-error">No hemos podido cargar las propiedades.</p>
                   <button
                     type="button"
                     className="btn btn-ghost btn-sm mt-1"
                     onClick={onRetry}
                   >
-                    Try again
+                    Reintentar
                   </button>
                 </div>
               ) : (
@@ -214,43 +214,43 @@ export function GooglePropertyPicker({
                           className="btn btn-ghost btn-xs shrink-0 text-error"
                           disabled={saving}
                           onClick={() => setRemoving(account)}
-                          aria-label={`Remove ${accountLabel(account)}`}
+                          aria-label={`Quitar ${accountLabel(account)}`}
                         >
-                          Remove account
+                          Quitar cuenta
                         </button>
                       </div>
                       {account.requiresReconnect ? (
                         <div className="flex flex-wrap items-center justify-between gap-2 px-2 pb-2 text-sm">
                           <span className="text-base-content/60">
-                            Connection expired
+                            Conexión caducada
                           </span>
                           <button
                             type="button"
                             className="btn btn-ghost btn-xs"
                             onClick={onReconnect}
-                            aria-label={`Reconnect ${accountLabel(account)}`}
+                            aria-label={`Reconectar ${accountLabel(account)}`}
                             disabled={linking}
                             aria-busy={linking}
                           >
-                            {linking ? "Opening Google…" : "Reconnect"}
+                            {linking ? "Abriendo Google…" : "Reconectar"}
                           </button>
                         </div>
                       ) : account.unavailable ? (
                         <div className="flex flex-wrap items-center justify-between gap-2 px-2 pb-2 text-sm">
                           <span className="text-base-content/60">
-                            Couldn't load properties
+                            No hemos podido cargar las propiedades
                           </span>
                           <button
                             type="button"
                             className="btn btn-ghost btn-xs"
                             onClick={onRetry}
                           >
-                            Try again
+                            Reintentar
                           </button>
                         </div>
                       ) : account.properties.length === 0 ? (
                         <p className="px-2 pb-3 text-sm text-base-content/50">
-                          No properties available
+                          No hay propiedades disponibles
                         </p>
                       ) : (
                         account.properties.map((property) => {
@@ -286,7 +286,7 @@ export function GooglePropertyPicker({
                                 ) : null}
                                 {!property.selectable ? (
                                   <span className="block text-xs">
-                                    No verified access
+                                    Sin acceso verificado
                                   </span>
                                 ) : null}
                               </span>
@@ -302,8 +302,8 @@ export function GooglePropertyPicker({
                   {filtered.length === 0 ? (
                     <p className="p-3 text-sm text-base-content/50">
                       {query
-                        ? "No matching properties or accounts"
-                        : "Add a Google account to find properties."}
+                        ? "No hay propiedades ni cuentas que coincidan"
+                        : "Añade una cuenta de Google para encontrar propiedades."}
                     </p>
                   ) : null}
                 </>
@@ -322,7 +322,7 @@ export function GooglePropertyPicker({
                 ) : (
                   <Plus className="size-4" />
                 )}
-                {linking ? "Opening Google…" : "Add Google account"}
+                {linking ? "Abriendo Google…" : "Añadir cuenta de Google"}
               </button>
             </div>
           </div>

@@ -96,7 +96,7 @@ export function GoogleAnalyticsConnectionCard({
         current ? { ...current, ...saved } : current,
       );
       captureClientEvent("ga4:property_select");
-      toast.success("Google Analytics connected");
+      toast.success("Google Analytics conectado");
       queryClient.removeQueries({ queryKey: ["ga4Properties", projectId] });
       void queryClient.invalidateQueries({ queryKey: connectionKey });
       setPicking(false);
@@ -106,7 +106,7 @@ export function GoogleAnalyticsConnectionCard({
   const disconnectMutation = useMutation({
     mutationFn: () => disconnectGa4({ data: { projectId } }),
     onSuccess: () => {
-      toast.success("Google Analytics disconnected from this project");
+      toast.success("Google Analytics desconectado de este proyecto");
       queryClient.setQueryData(connectionKey, (current: typeof connection) =>
         current ? { ...current, connected: false } : current,
       );
@@ -142,7 +142,7 @@ export function GoogleAnalyticsConnectionCard({
         {connectionQuery.isPending ? (
           <div
             role="status"
-            aria-label="Loading connection"
+            aria-label="Cargando conexión"
             className="space-y-3 animate-pulse"
           >
             <div className="h-4 w-2/3 rounded bg-base-200" />
@@ -151,14 +151,14 @@ export function GoogleAnalyticsConnectionCard({
         ) : connectionUnavailable ? (
           <div role="alert" className="space-y-3 text-sm">
             <p className="text-error">
-              Couldn't check this project's connection.
+              No hemos podido comprobar la conexión de este proyecto.
             </p>
             <button
               type="button"
               className="btn btn-ghost btn-sm"
               onClick={() => void connectionQuery.refetch()}
             >
-              Try again
+              Reintentar
             </button>
           </div>
         ) : selfHostedNeedsSetup ? (
@@ -202,7 +202,7 @@ export function GoogleAnalyticsConnectionCard({
               onSave={() => selection && setPropertyMutation.mutate(selection)}
               saving={setPropertyMutation.isPending}
               secondaryAction={{
-                label: "Cancel",
+                label: "Cancelar",
                 disabled: setPropertyMutation.isPending,
                 onClick: () => {
                   setPicking(false);
@@ -243,8 +243,8 @@ export function GoogleAnalyticsConnectionCard({
         ) : null}
         {connectionQuery.isSuccess && !selfHostedNeedsSetup && !canManage ? (
           <p className="mt-3 text-sm text-base-content/60">
-            Ask an organization owner or admin to change this project's
-            connection.
+            Pide a un propietario o admin de la organización que cambie la
+            conexión de este proyecto.
           </p>
         ) : null}
       </IntegrationConnectionCard>
@@ -267,7 +267,7 @@ function DismissButton({
       onClick={onClick}
       disabled={disabled}
     >
-      Dismiss
+      Descartar
     </button>
   );
 }

@@ -12,33 +12,35 @@ export function googleAuthErrorCopy(
   code: string,
   providerLabel?: string,
 ): { title: string; description: string } {
-  const what = providerLabel ? `${providerLabel} connection` : "Google sign-in";
+  const what = providerLabel
+    ? `La conexión con ${providerLabel}`
+    : "El inicio de sesión con Google";
 
   switch (code) {
     case "state_mismatch":
       return {
-        title: `${what} didn't finish`,
+        title: `${what} no se completó`,
         description:
-          "The attempt expired or was interrupted. Try again in a single browser tab and finish the Google steps within 10 minutes. If it keeps happening, make sure your browser allows cookies for this site.",
+          "El intento caducó o se interrumpió. Vuelve a intentarlo en una sola pestaña del navegador y termina los pasos de Google en menos de 10 minutos. Si sigue pasando, asegúrate de que tu navegador permite cookies para este sitio.",
       };
     case "access_denied":
       return {
-        title: `${what} was canceled`,
+        title: `${what} se canceló`,
         description:
-          "Google's permission screen was closed or declined. Try again whenever you're ready.",
+          "Se cerró o se rechazó la pantalla de permisos de Google. Vuelve a intentarlo cuando quieras.",
       };
     case "account_already_linked_to_different_user":
       return {
-        title: "Google account already connected",
+        title: "Esa cuenta de Google ya está conectada",
         description: providerLabel
-          ? `Sign in to the OpenSEO user that linked it, open the ${providerLabel} property picker, and choose Remove account beside the Google account. Then link it here.`
-          : "That Google account is already linked to a different OpenSEO user. Sign in with that user, or contact support for help.",
+          ? `Inicia sesión con el usuario de OpenSEO que la conectó, abre el selector de propiedad de ${providerLabel} y elige "Quitar cuenta" junto a la cuenta de Google. Luego conéctala aquí.`
+          : "Esa cuenta de Google ya está vinculada a otro usuario de OpenSEO. Inicia sesión con ese usuario, o contacta con soporte.",
       };
     default:
       return {
-        title: `${what} didn't finish`,
+        title: `${what} no se completó`,
         description:
-          "Something went wrong while talking to Google. Please try again — if it keeps failing, contact support.",
+          "Algo ha fallado al hablar con Google. Inténtalo de nuevo — si sigue fallando, contacta con soporte.",
       };
   }
 }

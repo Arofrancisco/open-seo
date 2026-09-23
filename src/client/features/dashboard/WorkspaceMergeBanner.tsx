@@ -24,7 +24,7 @@ export function WorkspaceMergeBanner() {
     mutationFn: () => mergeLegacyWorkspaces(),
     onSuccess: ({ mergedWorkspaces }) => {
       toast.success(
-        `Migrated ${mergedWorkspaces} organization${mergedWorkspaces === 1 ? "" : "s"} into the shared organization.`,
+        `Se ${mergedWorkspaces === 1 ? "ha" : "han"} migrado ${mergedWorkspaces} organización${mergedWorkspaces === 1 ? "" : "es"} a la organización compartida.`,
       );
       // The merge changes projects, connections, and the banner's own status —
       // refetch everything rather than enumerating keys.
@@ -34,7 +34,7 @@ export function WorkspaceMergeBanner() {
       toast.error(
         getStandardErrorMessage(
           error,
-          "Couldn't migrate the organizations. Try again.",
+          "No hemos podido migrar las organizaciones. Inténtalo de nuevo.",
         ),
       ),
   });
@@ -46,10 +46,10 @@ export function WorkspaceMergeBanner() {
   return (
     <div className="rounded-xl border border-warning/40 bg-warning/10 p-5">
       <p className="max-w-3xl text-sm">
-        When self-hosting on Cloudflare, there was a bug where each user had
-        their own workspace. It was intended for all users to be in one
-        workspace. Clicking the button below will migrate everyone&apos;s
-        previous work into this shared workspace.
+        Al autoalojar en Cloudflare hubo un fallo por el que cada usuario
+        tenía su propio espacio de trabajo. La intención era que todos los
+        usuarios estuvieran en uno solo. Al pulsar el botón de abajo migrarás
+        el trabajo previo de todos a este espacio compartido.
       </p>
       <button
         type="button"
@@ -57,7 +57,7 @@ export function WorkspaceMergeBanner() {
         disabled={mergeMutation.isPending}
         onClick={() => mergeMutation.mutate()}
       >
-        {mergeMutation.isPending ? "Migrating…" : "Migrate organizations"}
+        {mergeMutation.isPending ? "Migrando…" : "Migrar organizaciones"}
       </button>
     </div>
   );

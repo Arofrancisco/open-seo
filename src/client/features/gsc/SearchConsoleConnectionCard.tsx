@@ -92,7 +92,7 @@ export function SearchConsoleConnectionCard({
         current ? { ...current, ...saved } : current,
       );
       captureClientEvent("gsc:property_select");
-      toast.success("Search Console connected");
+      toast.success("Search Console conectado");
       queryClient.removeQueries({ queryKey: ["gscSites", projectId] });
       void queryClient.invalidateQueries({ queryKey: connectionKey });
       setPicking(false);
@@ -119,7 +119,7 @@ export function SearchConsoleConnectionCard({
   const disconnectMutation = useMutation({
     mutationFn: () => disconnectGsc({ data: { projectId } }),
     onSuccess: () => {
-      toast.success("Search Console disconnected from this project");
+      toast.success("Search Console desconectado de este proyecto");
       queryClient.setQueryData(connectionKey, (current: typeof connection) =>
         current ? { ...current, connected: false } : current,
       );
@@ -164,7 +164,7 @@ export function SearchConsoleConnectionCard({
       {connectionQuery.isPending ? (
         <div
           role="status"
-          aria-label="Loading connection"
+          aria-label="Cargando conexión"
           className="space-y-3 animate-pulse"
         >
           <div className="h-4 w-2/3 rounded bg-base-200" />
@@ -173,14 +173,14 @@ export function SearchConsoleConnectionCard({
       ) : connectionQuery.isError && !connection ? (
         <div role="alert" className="space-y-3 text-sm">
           <p className="text-error">
-            Couldn't check this project's connection.
+            No hemos podido comprobar la conexión de este proyecto.
           </p>
           <button
             type="button"
             className="btn btn-ghost btn-sm"
             onClick={() => void connectionQuery.refetch()}
           >
-            Try again
+            Reintentar
           </button>
         </div>
       ) : selfHostedNeedsSetup ? (
@@ -217,7 +217,7 @@ export function SearchConsoleConnectionCard({
             onSave={() => selection && setSiteMutation.mutate(selection)}
             saving={setSiteMutation.isPending}
             secondaryAction={{
-              label: "Cancel",
+              label: "Cancelar",
               disabled: setSiteMutation.isPending,
               onClick: () => {
                 setPicking(false);
@@ -253,8 +253,8 @@ export function SearchConsoleConnectionCard({
       ) : null}
       {connectionQuery.isSuccess && !selfHostedNeedsSetup && !canManage ? (
         <p className="mt-3 text-sm text-base-content/60">
-          Ask an organization owner or admin to change this project's
-          connection.
+          Pide a un propietario o admin de la organización que cambie la
+          conexión de este proyecto.
         </p>
       ) : null}
     </IntegrationConnectionCard>

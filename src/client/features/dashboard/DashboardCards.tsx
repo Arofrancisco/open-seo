@@ -60,15 +60,15 @@ export function GscCard({
 
   return (
     <CardShell
-      title="Search performance"
-      stamp="Google Search Console · last 28 days"
+      title="Rendimiento de búsqueda"
+      stamp="Google Search Console · últimos 28 días"
       action={
         <Link
           to="/p/$projectId/search-performance"
           params={{ projectId }}
           className={moreDetailsClass}
         >
-          More details
+          Más detalles
         </Link>
       }
     >
@@ -80,12 +80,13 @@ export function GscCard({
         </div>
       ) : reportQuery.isError ? (
         <p className="text-sm text-base-content/60">
-          Couldn&rsquo;t load Search Console data. Try again shortly.
+          No hemos podido cargar los datos de Search Console. Inténtalo de
+          nuevo en un momento.
         </p>
       ) : report?.connected ? (
         <div className="grid grid-cols-2 gap-3">
           <Stat
-            label="Clicks"
+            label="Clics"
             value={formatCount(report.totals.clicks)}
             sub={
               <PercentDelta
@@ -95,7 +96,7 @@ export function GscCard({
             }
           />
           <Stat
-            label="Impressions"
+            label="Impresiones"
             value={formatCount(report.totals.impressions)}
             sub={
               <PercentDelta
@@ -106,7 +107,7 @@ export function GscCard({
           />
           <Stat label="CTR" value={formatCtr(report.totals.ctr)} />
           <Stat
-            label="Avg position"
+            label="Posición media"
             value={formatPosition(report.totals.position)}
           />
         </div>
@@ -124,16 +125,16 @@ export function AuditHealthCard({
 }) {
   if (!audit) {
     return (
-      <CardShell title="Site audit">
+      <CardShell title="Auditoría de sitio">
         <EmptyCardBody
-          message="Crawl your site for broken links, missing tags and indexability problems."
+          message="Rastrea tu web en busca de enlaces rotos, etiquetas ausentes y problemas de indexabilidad."
           cta={
             <Link
               to="/p/$projectId/audit"
               params={{ projectId }}
               className="btn btn-primary btn-sm"
             >
-              Run an audit
+              Lanzar auditoría
             </Link>
           }
         />
@@ -143,13 +144,13 @@ export function AuditHealthCard({
 
   return (
     <CardShell
-      title="Site audit"
-      stamp={`Site audit · ${
+      title="Auditoría de sitio"
+      stamp={`Auditoría de sitio · ${
         audit.status === "completed"
-          ? `crawled ${audit.pagesCrawled} pages · ${formatDay(audit.startedAt)}`
+          ? `${audit.pagesCrawled} páginas rastreadas · ${formatDay(audit.startedAt)}`
           : audit.status === "running"
-            ? "crawl in progress"
-            : "last crawl failed"
+            ? "rastreo en curso"
+            : "el último rastreo falló"
       }`}
       action={
         <Link
@@ -157,14 +158,14 @@ export function AuditHealthCard({
           params={{ projectId }}
           className={moreDetailsClass}
         >
-          More details
+          Más detalles
         </Link>
       }
     >
       {audit.topIssues.length === 0 ? (
         <div className="flex items-center gap-2 text-sm text-base-content/70">
           <Check className="size-4 text-success" />
-          No issues found — your site looks healthy.
+          No se encontraron incidencias — tu web tiene buena salud.
         </div>
       ) : (
         <ul className="space-y-2">
@@ -188,14 +189,14 @@ export function AuditHealthCard({
                 </span>
               </span>
               <span className="shrink-0 tabular-nums text-base-content/60">
-                {issue.count} {issue.count === 1 ? "page" : "pages"}
+                {issue.count} {issue.count === 1 ? "página" : "páginas"}
               </span>
             </li>
           ))}
           {audit.totalIssueTypes > audit.topIssues.length ? (
             <li className="text-xs text-base-content/50">
-              + {audit.totalIssueTypes - audit.topIssues.length} more issue
-              {audit.totalIssueTypes - audit.topIssues.length === 1 ? "" : "s"}
+              + {audit.totalIssueTypes - audit.topIssues.length} incidencia
+              {audit.totalIssueTypes - audit.topIssues.length === 1 ? "" : "s"} más
             </li>
           ) : null}
         </ul>
@@ -215,7 +216,7 @@ export function BacklinkPulseCard({
 }) {
   if (!backlinks && refreshing) {
     return (
-      <CardShell title="Backlink pulse" stamp="Taking your first snapshot…">
+      <CardShell title="Pulso de backlinks" stamp="Tomando tu primera instantánea…">
         <div className="grid grid-cols-2 gap-3" aria-busy>
           {Array.from({ length: 4 }, (_, i) => (
             <div key={i} className="skeleton h-20" />
@@ -227,9 +228,10 @@ export function BacklinkPulseCard({
 
   if (!backlinks) {
     return (
-      <CardShell title="Backlink pulse">
+      <CardShell title="Pulso de backlinks">
         <p className="text-sm text-base-content/60">
-          We&rsquo;ll snapshot who links to your domain — nothing to set up.
+          Haremos una instantánea de quién enlaza a tu dominio — nada que
+          configurar.
         </p>
       </CardShell>
     );
@@ -237,9 +239,9 @@ export function BacklinkPulseCard({
 
   return (
     <CardShell
-      title="Backlink pulse"
-      stamp={`Backlinks · snapshot ${formatDay(backlinks.capturedAt)}${
-        refreshing ? " · refreshing…" : ""
+      title="Pulso de backlinks"
+      stamp={`Backlinks · instantánea ${formatDay(backlinks.capturedAt)}${
+        refreshing ? " · actualizando…" : ""
       }`}
       action={
         <Link
@@ -248,13 +250,13 @@ export function BacklinkPulseCard({
           search={{ target: backlinks.domain, scope: "domain" }}
           className={moreDetailsClass}
         >
-          More details
+          Más detalles
         </Link>
       }
     >
       <div className="grid grid-cols-2 gap-3">
         <Stat
-          label="Ref. domains"
+          label="Dominios de referencia"
           value={
             backlinks.referringDomains === null
               ? "—"
@@ -270,7 +272,7 @@ export function BacklinkPulseCard({
           }
         />
         <Stat
-          label="New links"
+          label="Enlaces nuevos"
           value={`▲ ${newLost(backlinks.newBacklinks)}`}
           tone={
             backlinks.newBacklinks && backlinks.newBacklinks > 0
@@ -279,7 +281,7 @@ export function BacklinkPulseCard({
           }
         />
         <Stat
-          label="Lost links"
+          label="Enlaces perdidos"
           value={`▼ ${newLost(backlinks.lostBacklinks)}`}
           tone={
             backlinks.lostBacklinks && backlinks.lostBacklinks > 0
