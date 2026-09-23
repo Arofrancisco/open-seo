@@ -54,7 +54,9 @@ export async function updateLoopsContact({
   throw new Error(`Failed to update Loops contact (${response.status})`);
 }
 
-export function getContactNameParts(name: string | null | undefined) {
+export function getContactNameParts(
+  name: string | null | undefined,
+): { firstName?: string; lastName?: string } {
   const trimmedName = name?.trim();
 
   if (!trimmedName) {
