@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   Link2,
   MessageSquare,
+  PackageSearch,
   Search,
   Sparkles,
   TrendingUp,
@@ -63,6 +64,11 @@ const projectNavItems = [
     to: "/p/$projectId/brand-lookup" as const,
     label: "Brand Lookup",
     icon: Sparkles,
+  },
+  {
+    to: "/p/$projectId/amazon-asin" as const,
+    label: "Amazon ASIN Lookup",
+    icon: PackageSearch,
   },
   {
     to: "/p/$projectId/prompt-explorer" as const,
@@ -125,6 +131,7 @@ export function getProjectNavGroups(projectId: string) {
         byPath("/p/$projectId/domain"),
         byPath("/p/$projectId/backlinks"),
         byPath("/p/$projectId/brand-lookup"),
+        byPath("/p/$projectId/amazon-asin"),
         byPath("/p/$projectId/prompt-explorer"),
       ],
     },

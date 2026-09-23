@@ -7,7 +7,8 @@ export type CreditFeature =
   | "ai_citations"
   | "ai_prompt_responses"
   | "local_seo"
-  | "agent";
+  | "agent"
+  | "amazon";
 
 const CREDIT_FEATURE_LABELS: Record<string, string> = {
   keyword_research: "Keyword Research",
@@ -23,6 +24,7 @@ const CREDIT_FEATURE_LABELS: Record<string, string> = {
   // key — keep the label so old billing breakdowns don't render "Other".
   onboarding: "Onboarding",
   agent: "SAM Agent",
+  amazon: "Amazon ASIN Lookup",
 };
 
 /**
@@ -55,6 +57,8 @@ export function mapDataforseoPathToCreditFeature(
         : "ai_prompt_responses";
     case "business_data":
       return "local_seo";
+    case "merchant":
+      return "amazon";
     case "keywords_data":
       return "keyword_research";
     case "dataforseo_labs": {

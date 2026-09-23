@@ -33,6 +33,11 @@ export {
   type BusinessTaskEndpoint,
   type BusinessTaskOutcome,
 } from "@/server/lib/dataforseo/business";
+export {
+  fetchAmazonAsinTaskResult,
+  type AmazonAsinResult,
+  type AmazonAsinTaskOutcome,
+} from "@/server/lib/dataforseo/merchant";
 
 export type {
   LabsKeywordDataItem,
