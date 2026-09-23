@@ -20,6 +20,7 @@ export const startAmazonAsinLookup = createServerFn({ method: "POST" })
       asin: data.asin,
       locationCode: marketplace.locationCode,
       languageCode: marketplace.languageCode,
+      seDomain: marketplace.seDomain,
     });
     return { taskId };
   });

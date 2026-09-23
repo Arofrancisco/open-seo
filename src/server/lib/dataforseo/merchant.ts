@@ -38,7 +38,9 @@ function postedTaskId<T extends DataforseoTaskLike & { id?: string }>(
 export async function postAmazonAsinTask(input: {
   asin: string;
   locationCode: number;
+  /** Locale-style, e.g. "es_ES" — the Merchant API rejects bare "es". */
   languageCode: string;
+  seDomain: string;
 }): Promise<DataforseoApiResponse<string>> {
   return postedTaskId(
     await dataforseoPost<DataforseoTaskLike & { id?: string }>(
@@ -48,6 +50,7 @@ export async function postAmazonAsinTask(input: {
           asin: input.asin,
           location_code: input.locationCode,
           language_code: input.languageCode,
+          se_domain: input.seDomain,
         },
       ],
       NO_RETRY,
