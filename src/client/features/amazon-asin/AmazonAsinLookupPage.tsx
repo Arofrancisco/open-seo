@@ -1,10 +1,17 @@
 import { useState, type FormEvent } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { AlertCircle, PackageSearch } from "lucide-react";
+import { AlertCircle, PackageSearch, Store } from "lucide-react";
 import { startAmazonAsinLookup } from "@/serverFunctions/amazonAsin";
-import { useAmazonAsinLookupPolling } from "@/client/features/amazon-asin/useAmazonAsinLookupPolling";
+import {
+  useAmazonAsinLookupPolling,
+  type AmazonLookupJob,
+} from "@/client/features/amazon-asin/useAmazonAsinLookupPolling";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
-import type { AmazonAsinResult } from "@/server/lib/dataforseo";
+import type {
+  AmazonAsinResult,
+  AmazonSellerOffer,
+} from "@/server/lib/dataforseo";
+import type { AmazonLookupKind } from "@/types/schemas/amazonAsin";
 import {
   AMAZON_MARKETPLACES,
   DEFAULT_AMAZON_MARKETPLACE_CODE,
@@ -15,24 +22,49 @@ type Props = { projectId: string };
 
 const ASIN_RE = /^[A-Z0-9]{10}$/;
 
+function useAmazonJob(projectId: string) {
+  const [job, setJob] = useState<AmazonLookupJob | null>(null);
+  const start = useMutation({
+    mutationFn: (input: {
+      kind: AmazonLookupKind;
+      asin: string;
+      marketplace: AmazonMarketplaceCode;
+    }) =>
+      startAmazonAsinLookup({ data: { projectId, ...input } }).then(
+        ({ taskId }) => ({ kind: input.kind, asin: input.asin, taskId }),
+      ),
+    onSuccess: setJob,
+  });
+  const poll = useAmazonAsinLookupPolling(projectId, job);
+  const outcome = poll.data?.outcome;
+  const isBusy =
+    start.isPending ||
+    (job != null && (outcome === undefined || outcome.status === "pending"));
+  const error = start.isError
+    ? getStandardErrorMessage(start.error, "No se pudo iniciar la búsqueda")
+    : poll.isError
+      ? getStandardErrorMessage(poll.error, "No se pudo consultar el resultado")
+      : null;
+  const reset = () => {
+    setJob(null);
+    start.reset();
+  };
+  return { start, data: poll.data, isBusy, error, reset };
+}
+
 export function AmazonAsinLookupPage({ projectId }: Props) {
   const [asin, setAsin] = useState("");
   const [marketplace, setMarketplace] = useState<AmazonMarketplaceCode>(
     DEFAULT_AMAZON_MARKETPLACE_CODE,
   );
-  const [taskId, setTaskId] = useState<string | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [searched, setSearched] = useState<{
+    asin: string;
+    marketplace: AmazonMarketplaceCode;
+  } | null>(null);
 
-  const startMutation = useMutation({
-    mutationFn: (input: { asin: string; marketplace: AmazonMarketplaceCode }) =>
-      startAmazonAsinLookup({
-        data: { projectId, asin: input.asin, marketplace: input.marketplace },
-      }),
-    onSuccess: (result) => setTaskId(result.taskId),
-  });
-
-  const lookupQuery = useAmazonAsinLookupPolling(projectId, taskId);
-  const outcome = lookupQuery.data;
+  const product = useAmazonJob(projectId);
+  const sellers = useAmazonJob(projectId);
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
@@ -45,29 +77,20 @@ export function AmazonAsinLookupPage({ projectId }: Props) {
     }
     setValidationError(null);
     setAsin(trimmed);
-    setTaskId(null);
-    startMutation.mutate({ asin: trimmed, marketplace });
+    setSearched({ asin: trimmed, marketplace });
+    sellers.reset();
+    product.reset();
+    product.start.mutate({ kind: "asin", asin: trimmed, marketplace });
   };
 
-  const isBusy =
-    startMutation.isPending ||
-    (taskId != null && (outcome === undefined || outcome.status === "pending"));
-
-  const errorMessage = startMutation.isError
-    ? getStandardErrorMessage(
-        startMutation.error,
-        "No se pudo iniciar la búsqueda",
-      )
-    : lookupQuery.isError
-      ? getStandardErrorMessage(
-          lookupQuery.error,
-          "No se pudo consultar el resultado",
-        )
-      : null;
+  const productOutcome =
+    product.data?.kind === "asin" ? product.data.outcome : undefined;
+  const sellersOutcome =
+    sellers.data?.kind === "sellers" ? sellers.data.outcome : undefined;
 
   return (
     <div className="px-4 py-4 pb-24 overflow-auto md:px-6 md:py-6 md:pb-8">
-      <div className="mx-auto max-w-3xl space-y-4">
+      <div className="mx-auto max-w-4xl space-y-4">
         <div>
           <h1 className="flex items-center gap-2 text-2xl font-semibold">
             <PackageSearch className="size-6" />
@@ -75,7 +98,7 @@ export function AmazonAsinLookupPage({ projectId }: Props) {
           </h1>
           <p className="text-sm text-base-content/70">
             Consulta precio, valoración, stock y marca de un producto de
-            Amazon a partir de su ASIN.
+            Amazon, y quién más lo está vendiendo.
           </p>
         </div>
 
@@ -128,48 +151,99 @@ export function AmazonAsinLookupPage({ projectId }: Props) {
             </select>
           </div>
 
-          <button type="submit" className="btn btn-primary" disabled={isBusy}>
-            {isBusy ? "Buscando…" : "Buscar"}
+          <button
+            type="submit"
+            className="btn btn-primary"
+            disabled={product.isBusy}
+          >
+            {product.isBusy ? "Buscando…" : "Buscar"}
           </button>
         </form>
 
-        {errorMessage ? (
-          <div
-            role="alert"
-            className="flex items-start gap-2 rounded-lg border border-error/30 bg-error/10 p-3 text-sm text-error"
-          >
-            <AlertCircle className="mt-0.5 size-4 shrink-0" />
-            <span>{errorMessage}</span>
-          </div>
+        <ErrorAlert message={product.error} />
+        {product.isBusy && !product.error ? (
+          <LoadingCard text="Consultando Amazon… puede tardar hasta medio minuto." />
+        ) : null}
+        {productOutcome?.status === "not_found" ? (
+          <InfoCard text="No se encontró ningún producto con ese ASIN en este marketplace." />
         ) : null}
 
-        {isBusy && !errorMessage ? (
-          <div className="rounded-xl border border-base-300 bg-base-100 p-6 text-center text-sm text-base-content/70">
-            Consultando Amazon… puede tardar hasta medio minuto.
-          </div>
-        ) : null}
+        {productOutcome?.status === "completed" && searched ? (
+          <>
+            <AmazonAsinResultCard result={productOutcome.result} />
 
-        {outcome?.status === "not_found" ? (
-          <div className="rounded-xl border border-base-300 bg-base-100 p-6 text-center text-sm text-base-content/70">
-            No se encontró ningún producto con ese ASIN en este marketplace.
-          </div>
-        ) : null}
+            {sellers.data === undefined && !sellers.isBusy && !sellers.error ? (
+              <button
+                type="button"
+                className="btn btn-outline gap-2"
+                onClick={() =>
+                  sellers.start.mutate({ kind: "sellers", ...searched })
+                }
+              >
+                <Store className="size-4" />
+                Ver vendedores de este producto
+              </button>
+            ) : null}
 
-        {outcome?.status === "completed" ? (
-          <AmazonAsinResultCard result={outcome.result} />
+            <ErrorAlert message={sellers.error} />
+            {sellers.isBusy && !sellers.error ? (
+              <LoadingCard text="Buscando vendedores… puede tardar hasta medio minuto." />
+            ) : null}
+            {sellersOutcome?.status === "not_found" ? (
+              <InfoCard text="Amazon no muestra otros vendedores para este producto." />
+            ) : null}
+            {sellersOutcome?.status === "completed" ? (
+              <SellersTable offers={sellersOutcome.result.offers} />
+            ) : null}
+          </>
         ) : null}
       </div>
     </div>
   );
 }
 
+function ErrorAlert({ message }: { message: string | null }) {
+  if (!message) return null;
+  return (
+    <div
+      role="alert"
+      className="flex items-start gap-2 rounded-lg border border-error/30 bg-error/10 p-3 text-sm text-error"
+    >
+      <AlertCircle className="mt-0.5 size-4 shrink-0" />
+      <span>{message}</span>
+    </div>
+  );
+}
+
+function LoadingCard({ text }: { text: string }) {
+  return (
+    <div className="flex items-center justify-center gap-2 rounded-xl border border-base-300 bg-base-100 p-6 text-sm text-base-content/70">
+      <span className="loading loading-spinner loading-sm" />
+      {text}
+    </div>
+  );
+}
+
+function InfoCard({ text }: { text: string }) {
+  return (
+    <div className="rounded-xl border border-base-300 bg-base-100 p-6 text-center text-sm text-base-content/70">
+      {text}
+    </div>
+  );
+}
+
+function formatPrice(value: number | null, currency: string | null) {
+  if (value == null) return "—";
+  return `${value.toFixed(2)} ${currency ?? ""}`.trim();
+}
+
 function AmazonAsinResultCard({ result }: { result: AmazonAsinResult }) {
   const priceLabel =
-    result.priceFrom != null
-      ? result.priceTo != null && result.priceTo !== result.priceFrom
-        ? `${result.priceFrom} – ${result.priceTo} ${result.currency ?? ""}`
-        : `${result.priceFrom} ${result.currency ?? ""}`
-      : "No disponible";
+    result.priceFrom == null
+      ? "No disponible"
+      : result.priceTo != null && result.priceTo !== result.priceFrom
+        ? `${formatPrice(result.priceFrom, null)} – ${formatPrice(result.priceTo, result.currency)}`
+        : formatPrice(result.priceFrom, result.currency);
 
   return (
     <div className="flex flex-col gap-4 rounded-xl border border-base-300 bg-base-100 p-4 sm:flex-row">
@@ -223,6 +297,80 @@ function AmazonAsinResultCard({ result }: { result: AmazonAsinResult }) {
             </>
           ) : null}
         </dl>
+      </div>
+    </div>
+  );
+}
+
+function SellersTable({ offers }: { offers: AmazonSellerOffer[] }) {
+  if (offers.length === 0) {
+    return <InfoCard text="Amazon no muestra otros vendedores para este producto." />;
+  }
+  return (
+    <div className="rounded-xl border border-base-300 bg-base-100">
+      <div className="flex items-center gap-2 border-b border-base-300 px-4 py-3">
+        <Store className="size-4" />
+        <h2 className="font-medium">
+          Vendedores ({offers.length})
+        </h2>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="table table-sm">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Vendedor</th>
+              <th>Envía</th>
+              <th>Precio</th>
+              <th>Estado</th>
+              <th>Valoración</th>
+              <th>Entrega</th>
+            </tr>
+          </thead>
+          <tbody>
+            {offers.map((offer, index) => (
+              <tr key={`${offer.sellerName ?? "seller"}-${index}`}>
+                <td>{offer.position ?? index + 1}</td>
+                <td>
+                  {offer.sellerUrl?.startsWith("https://") && offer.sellerName ? (
+                    <a
+                      href={offer.sellerUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="link link-hover"
+                    >
+                      {offer.sellerName}
+                    </a>
+                  ) : (
+                    (offer.sellerName ?? "—")
+                  )}
+                </td>
+                <td>{offer.shipsFrom ?? "—"}</td>
+                <td>
+                  {formatPrice(offer.price, offer.currency)}
+                  {offer.regularPrice != null &&
+                  offer.price != null &&
+                  offer.regularPrice > offer.price ? (
+                    <span className="ml-1 text-xs text-base-content/50 line-through">
+                      {formatPrice(offer.regularPrice, null)}
+                    </span>
+                  ) : null}
+                </td>
+                <td>{offer.condition ?? "—"}</td>
+                <td>
+                  {offer.ratingValue != null
+                    ? `${offer.ratingValue}/${offer.ratingMax ?? 5}${
+                        offer.ratingVotes != null ? ` (${offer.ratingVotes})` : ""
+                      }`
+                    : "—"}
+                </td>
+                <td className="max-w-48 text-xs">
+                  {offer.deliveryMessage ?? "—"}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );

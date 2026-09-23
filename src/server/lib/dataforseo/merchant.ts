@@ -35,16 +35,33 @@ function postedTaskId<T extends DataforseoTaskLike & { id?: string }>(
   return { data: task.id, billing: buildTaskBilling(task) };
 }
 
-export async function postAmazonAsinTask(input: {
+type AmazonTaskInput = {
   asin: string;
   locationCode: number;
   /** Locale-style, e.g. "es_ES" — the Merchant API rejects bare "es". */
   languageCode: string;
   seDomain: string;
-}): Promise<DataforseoApiResponse<string>> {
+};
+
+export function postAmazonAsinTask(
+  input: AmazonTaskInput,
+): Promise<DataforseoApiResponse<string>> {
+  return postAmazonTask("asin", input);
+}
+
+export function postAmazonSellersTask(
+  input: AmazonTaskInput,
+): Promise<DataforseoApiResponse<string>> {
+  return postAmazonTask("sellers", input);
+}
+
+async function postAmazonTask(
+  endpoint: "asin" | "sellers",
+  input: AmazonTaskInput,
+): Promise<DataforseoApiResponse<string>> {
   return postedTaskId(
     await dataforseoPost<DataforseoTaskLike & { id?: string }>(
-      "/v3/merchant/amazon/asin/task_post",
+      `/v3/merchant/amazon/${endpoint}/task_post`,
       [
         {
           asin: input.asin,
@@ -131,22 +148,28 @@ export function extractBestSellersRank(
   return null;
 }
 
-export type AmazonAsinTaskOutcome =
+export type AmazonTaskOutcome<T> =
   | { status: "pending" }
   | { status: "not_found" }
-  | { status: "completed"; result: AmazonAsinResult };
+  | { status: "completed"; result: T };
+
+export type AmazonAsinTaskOutcome = AmazonTaskOutcome<AmazonAsinResult>;
+
+type CompletedAmazonTask =
+  | { done: false; outcome: { status: "pending" } | { status: "not_found" } }
+  | { done: true; task: DataforseoItemsTask<unknown> };
 
 /**
- * Collects a queued Amazon ASIN task. Deliberately not metered: collection is
- * free (the task was charged at task_post), so routing it through the
- * metering seam would charge twice — same pattern as
- * fetchBusinessDataTaskResult.
+ * Collects a queued Amazon task. Deliberately not metered: collection is free
+ * (the task was charged at task_post), so routing it through the metering
+ * seam would charge twice — same pattern as fetchBusinessDataTaskResult.
  */
-export async function fetchAmazonAsinTaskResult(input: {
-  taskId: string;
-}): Promise<AmazonAsinTaskOutcome> {
+async function collectAmazonTask(
+  endpoint: "asin" | "sellers",
+  taskId: string,
+): Promise<CompletedAmazonTask> {
   const response = await dataforseoGet<DataforseoItemsTask<unknown>>(
-    `/v3/merchant/amazon/asin/task_get/advanced/${encodeURIComponent(input.taskId)}`,
+    `/v3/merchant/amazon/${endpoint}/task_get/advanced/${encodeURIComponent(taskId)}`,
   );
 
   const task = response?.tasks?.[0];
@@ -157,18 +180,39 @@ export async function fetchAmazonAsinTaskResult(input: {
     );
   }
 
-  if (isTaskInProgress(task)) return { status: "pending" };
+  if (isTaskInProgress(task)) {
+    return { done: false, outcome: { status: "pending" } };
+  }
 
   if (task.status_code !== 20000) {
     // "No Search Results" covers an ASIN with no listing in this marketplace.
-    if (isNoResultsTask(task)) return { status: "not_found" };
+    if (isNoResultsTask(task)) {
+      return { done: false, outcome: { status: "not_found" } };
+    }
     throw new AppError(
       "INTERNAL_ERROR",
       task.status_message || `DataForSEO task failed (${task.status_code})`,
     );
   }
 
-  const item = task.result?.[0]?.items?.[0];
+  return { done: true, task };
+}
+
+const BRAND_PREFIX_RE = /^(marca|brand|marke|marque)\s*:\s*/i;
+
+function cleanBrand(author: string | null | undefined): string | null {
+  const brand = author?.replace(BRAND_PREFIX_RE, "").trim();
+  return brand ? brand : null;
+}
+
+export async function fetchAmazonAsinTaskResult(input: {
+  taskId: string;
+  asin: string;
+}): Promise<AmazonAsinTaskOutcome> {
+  const collected = await collectAmazonTask("asin", input.taskId);
+  if (!collected.done) return collected.outcome;
+
+  const item = collected.task.result?.[0]?.items?.[0];
   const parsed = amazonAsinResultSchema.safeParse(item ?? {});
   if (!parsed.success || !isRecord(item)) return { status: "not_found" };
 
@@ -176,7 +220,7 @@ export async function fetchAmazonAsinTaskResult(input: {
   return {
     status: "completed",
     result: {
-      asin: data.asin ?? null,
+      asin: data.asin ?? input.asin,
       title: data.title ?? null,
       imageUrl: data.image_url ?? null,
       priceFrom: data.price_from ?? null,
@@ -184,7 +228,7 @@ export async function fetchAmazonAsinTaskResult(input: {
       currency: data.currency ?? null,
       percentageDiscount: data.percentage_discount ?? null,
       isAvailable: data.is_available ?? null,
-      brand: data.author ?? null,
+      brand: cleanBrand(data.author),
       rating: data.rating
         ? {
             value: data.rating.value ?? null,
@@ -194,5 +238,107 @@ export async function fetchAmazonAsinTaskResult(input: {
         : null,
       bestSellersRank: extractBestSellersRank(data.product_information),
     },
+  };
+}
+
+const nullableString = z.string().nullable().optional();
+const nullableNumber = z.number().nullable().optional();
+
+const amazonSellerItemSchema = z
+  .object({
+    rank_absolute: nullableNumber,
+    seller_name: nullableString,
+    seller_url: nullableString,
+    ships_from: nullableString,
+    condition: nullableString,
+    price: z
+      .object({
+        current: nullableNumber,
+        regular: nullableNumber,
+        currency: nullableString,
+      })
+      .passthrough()
+      .nullable()
+      .optional(),
+    rating: z
+      .object({
+        value: nullableNumber,
+        votes_count: nullableNumber,
+        rating_max: nullableNumber,
+      })
+      .passthrough()
+      .nullable()
+      .optional(),
+    delivery_info: z
+      .object({
+        delivery_message: nullableString,
+        delivery_date_from: nullableString,
+        delivery_date_to: nullableString,
+      })
+      .passthrough()
+      .nullable()
+      .optional(),
+  })
+  .passthrough();
+
+export type AmazonSellerOffer = {
+  position: number | null;
+  sellerName: string | null;
+  sellerUrl: string | null;
+  shipsFrom: string | null;
+  condition: string | null;
+  price: number | null;
+  regularPrice: number | null;
+  currency: string | null;
+  ratingValue: number | null;
+  ratingMax: number | null;
+  ratingVotes: number | null;
+  deliveryMessage: string | null;
+};
+
+export type AmazonSellersResult = {
+  asin: string;
+  title: string | null;
+  offers: AmazonSellerOffer[];
+};
+
+export type AmazonSellersTaskOutcome = AmazonTaskOutcome<AmazonSellersResult>;
+
+export async function fetchAmazonSellersTaskResult(input: {
+  taskId: string;
+  asin: string;
+}): Promise<AmazonSellersTaskOutcome> {
+  const collected = await collectAmazonTask("sellers", input.taskId);
+  if (!collected.done) return collected.outcome;
+
+  const first = collected.task.result?.[0];
+  const rawItems = Array.isArray(first?.items) ? first.items : [];
+  // One malformed offer shouldn't hide the rest of the sellers list.
+  const offers = rawItems.flatMap((raw): AmazonSellerOffer[] => {
+    const parsed = amazonSellerItemSchema.safeParse(raw);
+    if (!parsed.success) return [];
+    const item = parsed.data;
+    return [
+      {
+        position: item.rank_absolute ?? null,
+        sellerName: item.seller_name ?? null,
+        sellerUrl: item.seller_url ?? null,
+        shipsFrom: item.ships_from ?? null,
+        condition: item.condition ?? null,
+        price: item.price?.current ?? null,
+        regularPrice: item.price?.regular ?? null,
+        currency: item.price?.currency ?? null,
+        ratingValue: item.rating?.value ?? null,
+        ratingMax: item.rating?.rating_max ?? null,
+        ratingVotes: item.rating?.votes_count ?? null,
+        deliveryMessage: item.delivery_info?.delivery_message ?? null,
+      },
+    ];
+  });
+
+  const title = isRecord(first) && typeof first.title === "string" ? first.title : null;
+  return {
+    status: "completed",
+    result: { asin: input.asin, title, offers },
   };
 }

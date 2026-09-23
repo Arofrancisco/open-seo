@@ -1,22 +1,28 @@
 import { useQuery } from "@tanstack/react-query";
 import { getAmazonAsinLookupStatus } from "@/serverFunctions/amazonAsin";
+import type { AmazonLookupKind } from "@/types/schemas/amazonAsin";
+
+export type AmazonLookupJob = {
+  kind: AmazonLookupKind;
+  asin: string;
+  taskId: string;
+};
 
 /**
- * Polls a queued Amazon ASIN lookup task until it leaves "pending". Same
- * refetchInterval-as-a-function shape as rank-tracking's
- * useRankRunPolling, simplified: this query's own data is the result, so
- * there's no separate results key to invalidate on completion.
+ * Polls a queued Amazon task until it leaves "pending". Same
+ * refetchInterval-as-a-function shape as rank-tracking's useRankRunPolling,
+ * simplified: this query's own data is the result.
  */
 export function useAmazonAsinLookupPolling(
   projectId: string,
-  taskId: string | null,
+  job: AmazonLookupJob | null,
 ) {
   return useQuery({
-    queryKey: ["amazonAsinLookup", projectId, taskId],
+    queryKey: ["amazonLookup", projectId, job?.kind, job?.taskId],
     queryFn: () =>
-      getAmazonAsinLookupStatus({ data: { projectId, taskId: taskId! } }),
-    enabled: taskId != null,
+      getAmazonAsinLookupStatus({ data: { projectId, ...job! } }),
+    enabled: job != null,
     refetchInterval: (query) =>
-      query.state.data?.status === "pending" ? 3000 : false,
+      query.state.data?.outcome.status === "pending" ? 3000 : false,
   });
 }

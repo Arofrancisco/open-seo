@@ -20,7 +20,10 @@ import {
   postGoogleReviewsTask,
   postMyBusinessUpdatesTask,
 } from "@/server/lib/dataforseo/business";
-import { postAmazonAsinTask } from "@/server/lib/dataforseo/merchant";
+import {
+  postAmazonAsinTask,
+  postAmazonSellersTask,
+} from "@/server/lib/dataforseo/merchant";
 import {
   fetchBacklinksHistory,
   fetchBacklinksRows,
@@ -103,6 +106,7 @@ export function createDataforseoClient(customer: BillingCustomerContext) {
       // task_post is where DataForSEO charges; collection runs unmetered
       // through fetchAmazonAsinTaskResult (see index.ts).
       asinTaskPost: meter(customer, postAmazonAsinTask, "amazon"),
+      sellersTaskPost: meter(customer, postAmazonSellersTask, "amazon"),
     },
     backlinks: {
       summary: meter(customer, fetchBacklinksSummary),

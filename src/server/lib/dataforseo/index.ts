@@ -35,8 +35,12 @@ export {
 } from "@/server/lib/dataforseo/business";
 export {
   fetchAmazonAsinTaskResult,
+  fetchAmazonSellersTaskResult,
   type AmazonAsinResult,
   type AmazonAsinTaskOutcome,
+  type AmazonSellerOffer,
+  type AmazonSellersResult,
+  type AmazonSellersTaskOutcome,
 } from "@/server/lib/dataforseo/merchant";
 
 export type {
