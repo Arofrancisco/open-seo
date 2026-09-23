@@ -375,14 +375,42 @@ const amazonSerpItemSchema = z
     type: z.string(),
     rank_group: nullableNumber,
     data_asin: nullableString,
+    title: nullableString,
+    price_from: nullableNumber,
+    currency: nullableString,
+    rating: z
+      .object({ value: nullableNumber, votes_count: nullableNumber })
+      .passthrough()
+      .nullable()
+      .optional(),
+    is_amazon_choice: z.boolean().nullable().optional(),
+    is_best_seller: z.boolean().nullable().optional(),
   })
   .passthrough();
+
+const AMAZON_TOP_RESULTS = 5;
+
+export type AmazonTopResult = {
+  position: number;
+  asin: string | null;
+  title: string | null;
+  price: number | null;
+  currency: string | null;
+  rating: number | null;
+  votes: number | null;
+  isAmazonChoice: boolean;
+  isBestSeller: boolean;
+};
 
 export type AmazonKeywordRank = {
   /** 1-based among organic results; null when not in the scanned results. */
   organicPosition: number | null;
   sponsoredPosition: number | null;
   organicResultsScanned: number;
+  /** Badges on the tracked ASIN's organic listing; null when not found. */
+  isAmazonChoice: boolean | null;
+  isBestSeller: boolean | null;
+  topResults: AmazonTopResult[];
 };
 
 export type AmazonProductsTaskOutcome = AmazonTaskOutcome<AmazonKeywordRank>;
@@ -401,6 +429,9 @@ export async function fetchAmazonProductsRank(input: {
             organicPosition: null,
             sponsoredPosition: null,
             organicResultsScanned: 0,
+            isAmazonChoice: null,
+            isBestSeller: null,
+            topResults: [],
           },
         }
       : collected.outcome;
@@ -421,7 +452,11 @@ export async function fetchAmazonProductsRank(input: {
     const index = list.findIndex(
       (item) => item.data_asin?.toUpperCase() === asin,
     );
-    return { position: index === -1 ? null : index + 1, count: list.length };
+    return {
+      list,
+      item: index === -1 ? null : list[index],
+      position: index === -1 ? null : index + 1,
+    };
   };
 
   const organic = positionIn("amazon_serp");
@@ -431,7 +466,24 @@ export async function fetchAmazonProductsRank(input: {
     result: {
       organicPosition: organic.position,
       sponsoredPosition: sponsored.position,
-      organicResultsScanned: organic.count,
+      organicResultsScanned: organic.list.length,
+      isAmazonChoice: organic.item
+        ? Boolean(organic.item.is_amazon_choice)
+        : null,
+      isBestSeller: organic.item ? Boolean(organic.item.is_best_seller) : null,
+      topResults: organic.list
+        .slice(0, AMAZON_TOP_RESULTS)
+        .map((item, index) => ({
+          position: index + 1,
+          asin: item.data_asin ?? null,
+          title: item.title ?? null,
+          price: item.price_from ?? null,
+          currency: item.currency ?? null,
+          rating: item.rating?.value ?? null,
+          votes: item.rating?.votes_count ?? null,
+          isAmazonChoice: Boolean(item.is_amazon_choice),
+          isBestSeller: Boolean(item.is_best_seller),
+        })),
     },
   };
 }

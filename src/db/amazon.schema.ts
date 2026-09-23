@@ -23,6 +23,10 @@ export const amazonRankKeywords = sqliteTable(
     keyword: text("keyword").notNull(),
     // AmazonMarketplaceCode ("ES", "US", ...).
     marketplace: text("marketplace").notNull(),
+    // DataForSEO task posted but not yet collected. Stored so a result still
+    // lands when the user closes the page before it finishes.
+    pendingTaskId: text("pending_task_id"),
+    pendingSince: text("pending_since"),
     createdAt: text("created_at")
       .notNull()
       .default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ','now'))`),
@@ -53,6 +57,11 @@ export const amazonRankChecks = sqliteTable(
     // How many organic results were scanned, so "not found" reads as
     // "not in the top N".
     organicResultsScanned: integer("organic_results_scanned").notNull(),
+    // Badges on the tracked ASIN for this keyword; null when it wasn't found.
+    isAmazonChoice: integer("is_amazon_choice", { mode: "boolean" }),
+    isBestSeller: integer("is_best_seller", { mode: "boolean" }),
+    // JSON array of the top organic results at check time (AmazonTopResult[]).
+    topResults: text("top_results"),
   },
   (table) => [
     index("amazon_rank_checks_keyword_checked_idx").on(

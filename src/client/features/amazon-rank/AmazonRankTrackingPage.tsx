@@ -1,21 +1,28 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { Fragment, useState, type FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   AlertCircle,
   ArrowDown,
   ArrowUp,
+  Award,
+  ChevronDown,
+  ChevronRight,
+  Download,
   ListOrdered,
   Minus,
   RefreshCw,
+  Star,
   Trash2,
 } from "lucide-react";
 import {
   addAmazonRankKeyword,
   deleteAmazonRankKeyword,
-  getAmazonRankCheckStatus,
+  exportAmazonRankHistory,
   listAmazonRankKeywords,
+  startAllAmazonRankChecks,
   startAmazonRankCheck,
+  type AmazonRankCheckView,
   type AmazonRankKeywordView,
 } from "@/serverFunctions/amazonRank";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
@@ -24,6 +31,11 @@ import {
   DEFAULT_AMAZON_MARKETPLACE_CODE,
   type AmazonMarketplaceCode,
 } from "@/shared/amazon-marketplaces";
+import {
+  buildAmazonRankCsv,
+  buildAmazonRankJson,
+  downloadFile,
+} from "@/client/features/amazon-rank/amazonRankExport";
 
 type Props = { projectId: string };
 
@@ -31,25 +43,118 @@ const ASIN_RE = /^[A-Z0-9]{10}$/;
 
 const listKey = (projectId: string) => ["amazonRankKeywords", projectId];
 
+function marketFor(code: string) {
+  return AMAZON_MARKETPLACES.find((m) => m.code === code);
+}
+
 export function AmazonRankTrackingPage({ projectId }: Props) {
+  const queryClient = useQueryClient();
   const keywordsQuery = useQuery({
     queryKey: listKey(projectId),
     queryFn: () => listAmazonRankKeywords({ data: { projectId } }),
+    // Each load also collects finished checks server-side.
+    refetchInterval: (query) =>
+      query.state.data?.some((keyword) => keyword.pending) ? 5000 : false,
   });
+
+  const checkAll = useMutation({
+    mutationFn: () => startAllAmazonRankChecks({ data: { projectId } }),
+    onSuccess: ({ started, skipped }) => {
+      void queryClient.invalidateQueries({ queryKey: listKey(projectId) });
+      toast.success(
+        started === 0
+          ? "Todas las palabras clave ya se están comprobando"
+          : `Comprobando ${started} palabra${started === 1 ? "" : "s"} clave${
+              skipped ? ` (${skipped} ya estaban en curso)` : ""
+            }`,
+      );
+    },
+    onError: (error) => {
+      void queryClient.invalidateQueries({ queryKey: listKey(projectId) });
+      toast.error(
+        getStandardErrorMessage(error, "No se pudieron lanzar las comprobaciones"),
+      );
+    },
+  });
+
+  const exportData = useMutation({
+    mutationFn: (format: "csv" | "json") =>
+      exportAmazonRankHistory({ data: { projectId } }).then((keywords) => ({
+        format,
+        keywords,
+      })),
+    onSuccess: ({ format, keywords }) => {
+      const date = new Date().toISOString().slice(0, 10);
+      if (format === "csv") {
+        downloadFile(
+          `amazon-posiciones-${date}.csv`,
+          buildAmazonRankCsv(keywords),
+          "text/csv;charset=utf-8",
+        );
+      } else {
+        downloadFile(
+          `amazon-posiciones-${date}.json`,
+          buildAmazonRankJson(keywords),
+          "application/json",
+        );
+      }
+    },
+    onError: (error) =>
+      toast.error(getStandardErrorMessage(error, "No se pudo exportar")),
+  });
+
+  const keywords = keywordsQuery.data ?? [];
+  const hasKeywords = keywords.length > 0;
+  const hasHistory = keywords.some((keyword) => keyword.history.length > 0);
 
   return (
     <div className="px-4 py-4 pb-24 overflow-auto md:px-6 md:py-6 md:pb-8">
-      <div className="mx-auto max-w-5xl space-y-4">
-        <div>
-          <h1 className="flex items-center gap-2 text-2xl font-semibold">
-            <ListOrdered className="size-6" />
-            Posiciones en Amazon
-          </h1>
-          <p className="text-sm text-base-content/70">
-            En qué posición aparece cada producto cuando alguien busca una
-            palabra clave en Amazon. Cada comprobación queda guardada en este
-            proyecto.
-          </p>
+      <div className="mx-auto max-w-6xl space-y-4">
+        <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+          <div>
+            <h1 className="flex items-center gap-2 text-2xl font-semibold">
+              <ListOrdered className="size-6" />
+              Posiciones en Amazon
+            </h1>
+            <p className="text-sm text-base-content/70">
+              En qué posición aparece cada producto cuando alguien busca una
+              palabra clave en Amazon, y quién va por delante. Cada
+              comprobación queda guardada en este proyecto.
+            </p>
+          </div>
+          {hasKeywords ? (
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                className="btn btn-primary btn-sm gap-1"
+                disabled={checkAll.isPending}
+                onClick={() => checkAll.mutate()}
+              >
+                <RefreshCw
+                  className={`size-4 ${checkAll.isPending ? "animate-spin" : ""}`}
+                />
+                Comprobar todas
+              </button>
+              <button
+                type="button"
+                className="btn btn-sm gap-1"
+                disabled={!hasHistory || exportData.isPending}
+                onClick={() => exportData.mutate("csv")}
+              >
+                <Download className="size-4" />
+                CSV
+              </button>
+              <button
+                type="button"
+                className="btn btn-sm gap-1"
+                disabled={!hasHistory || exportData.isPending}
+                onClick={() => exportData.mutate("json")}
+              >
+                <Download className="size-4" />
+                JSON
+              </button>
+            </div>
+          ) : null}
         </div>
 
         <AddKeywordForm projectId={projectId} />
@@ -60,13 +165,13 @@ export function AmazonRankTrackingPage({ projectId }: Props) {
           <div className="flex justify-center p-6">
             <span className="loading loading-spinner" />
           </div>
-        ) : keywordsQuery.data.length === 0 ? (
+        ) : !hasKeywords ? (
           <div className="rounded-xl border border-base-300 bg-base-100 p-6 text-center text-sm text-base-content/70">
             Aún no sigues ninguna palabra clave. Añade un ASIN y la búsqueda
             para la que quieres saber su posición.
           </div>
         ) : (
-          <KeywordsTable projectId={projectId} keywords={keywordsQuery.data} />
+          <KeywordsTable projectId={projectId} keywords={keywords} />
         )}
       </div>
     </div>
@@ -196,6 +301,7 @@ function KeywordsTable({
       <table className="table">
         <thead>
           <tr>
+            <th className="w-8" />
             <th>Palabra clave</th>
             <th>ASIN</th>
             <th>Orgánica</th>
@@ -222,45 +328,19 @@ function KeywordRow({
   row: AmazonRankKeywordView;
 }) {
   const queryClient = useQueryClient();
-  const [taskId, setTaskId] = useState<string | null>(null);
-
+  const [expanded, setExpanded] = useState(false);
   const refreshList = () =>
     queryClient.invalidateQueries({ queryKey: listKey(projectId) });
 
   const startMutation = useMutation({
     mutationFn: () =>
       startAmazonRankCheck({ data: { projectId, keywordId: row.id } }),
-    onSuccess: ({ taskId: id }) => setTaskId(id),
+    onSuccess: () => void refreshList(),
     onError: (error) =>
       toast.error(
         getStandardErrorMessage(error, "No se pudo lanzar la comprobación"),
       ),
   });
-
-  const statusQuery = useQuery({
-    queryKey: ["amazonRankCheck", projectId, row.id, taskId],
-    queryFn: () =>
-      getAmazonRankCheckStatus({
-        data: { projectId, keywordId: row.id, taskId: taskId! },
-      }),
-    enabled: taskId != null,
-    refetchInterval: (query) =>
-      query.state.data?.status === "pending" ? 4000 : false,
-    retry: false,
-  });
-
-  const checkStatus = statusQuery.data?.status;
-  const checkFailed = statusQuery.isError;
-  useEffect(() => {
-    if (taskId == null) return;
-    if (checkFailed) {
-      setTaskId(null);
-      toast.error("La comprobación falló. Inténtalo de nuevo en un momento.");
-    } else if (checkStatus && checkStatus !== "pending") {
-      setTaskId(null);
-      void queryClient.invalidateQueries({ queryKey: listKey(projectId) });
-    }
-  }, [taskId, checkStatus, checkFailed, queryClient, projectId]);
 
   const deleteMutation = useMutation({
     mutationFn: () =>
@@ -270,75 +350,237 @@ function KeywordRow({
       toast.error(getStandardErrorMessage(error, "No se pudo borrar")),
   });
 
-  const isChecking = startMutation.isPending || taskId != null;
-  const market = AMAZON_MARKETPLACES.find((m) => m.code === row.marketplace);
+  const [latest = null, previous = null] = row.history;
+  const isChecking = startMutation.isPending || row.pending;
+  const market = marketFor(row.marketplace);
+  const domain = market?.seDomain ?? "amazon.es";
 
   return (
-    <tr>
-      <td>
-        <div className="font-medium">{row.keyword}</div>
-        <div className="text-xs text-base-content/60">
-          {market?.seDomain ?? row.marketplace}
-        </div>
-      </td>
-      <td className="font-mono text-xs">
-        <a
-          href={`https://www.${market?.seDomain ?? "amazon.es"}/dp/${row.asin}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="link link-hover"
-        >
-          {row.asin}
-        </a>
-      </td>
-      <td>
-        <Position
-          current={row.latest?.organicPosition ?? null}
-          previous={row.previous?.organicPosition ?? null}
-          checked={row.latest != null}
-          scanned={row.latest?.organicResultsScanned ?? 0}
-        />
-      </td>
-      <td>
-        <Position
-          current={row.latest?.sponsoredPosition ?? null}
-          previous={row.previous?.sponsoredPosition ?? null}
-          checked={row.latest != null}
-          scanned={null}
-        />
-      </td>
-      <td className="text-xs text-base-content/70">
-        {row.latest ? formatDate(row.latest.checkedAt) : "Nunca"}
-      </td>
-      <td>
-        <div className="flex justify-end gap-1">
+    <Fragment>
+      <tr>
+        <td>
           <button
             type="button"
-            className="btn btn-sm gap-1"
-            disabled={isChecking}
-            onClick={() => startMutation.mutate()}
+            className="btn btn-ghost btn-xs"
+            aria-label={expanded ? "Ocultar detalle" : "Ver detalle"}
+            disabled={!latest}
+            onClick={() => setExpanded((value) => !value)}
           >
-            <RefreshCw
-              className={`size-3.5 ${isChecking ? "animate-spin" : ""}`}
+            {expanded ? (
+              <ChevronDown className="size-4" />
+            ) : (
+              <ChevronRight className="size-4" />
+            )}
+          </button>
+        </td>
+        <td>
+          <div className="font-medium">{row.keyword}</div>
+          <div className="text-xs text-base-content/60">{domain}</div>
+        </td>
+        <td className="font-mono text-xs">
+          <a
+            href={`https://www.${domain}/dp/${row.asin}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="link link-hover"
+          >
+            {row.asin}
+          </a>
+        </td>
+        <td>
+          <div className="flex flex-col gap-1">
+            <Position
+              current={latest?.organicPosition ?? null}
+              previous={previous?.organicPosition ?? null}
+              checked={latest != null}
+              scanned={latest?.organicResultsScanned ?? 0}
             />
-            {isChecking ? "Comprobando…" : "Comprobar"}
-          </button>
-          <button
-            type="button"
-            className="btn btn-ghost btn-sm"
-            aria-label="Dejar de seguir"
-            disabled={isChecking || deleteMutation.isPending}
-            onClick={() => {
-              if (window.confirm(`¿Dejar de seguir "${row.keyword}"? Se borra su historial.`)) {
-                deleteMutation.mutate();
-              }
-            }}
-          >
-            <Trash2 className="size-4" />
-          </button>
-        </div>
-      </td>
-    </tr>
+            <Badges check={latest} />
+          </div>
+        </td>
+        <td>
+          <Position
+            current={latest?.sponsoredPosition ?? null}
+            previous={previous?.sponsoredPosition ?? null}
+            checked={latest != null}
+            scanned={null}
+          />
+        </td>
+        <td className="text-xs text-base-content/70">
+          {row.pending
+            ? "Comprobando…"
+            : latest
+              ? formatDate(latest.checkedAt)
+              : "Nunca"}
+        </td>
+        <td>
+          <div className="flex justify-end gap-1">
+            <button
+              type="button"
+              className="btn btn-sm gap-1"
+              disabled={isChecking}
+              onClick={() => startMutation.mutate()}
+            >
+              <RefreshCw
+                className={`size-3.5 ${isChecking ? "animate-spin" : ""}`}
+              />
+              {isChecking ? "Comprobando…" : "Comprobar"}
+            </button>
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm"
+              aria-label="Dejar de seguir"
+              disabled={isChecking || deleteMutation.isPending}
+              onClick={() => {
+                if (
+                  window.confirm(
+                    `¿Dejar de seguir "${row.keyword}"? Se borra su historial.`,
+                  )
+                ) {
+                  deleteMutation.mutate();
+                }
+              }}
+            >
+              <Trash2 className="size-4" />
+            </button>
+          </div>
+        </td>
+      </tr>
+      {expanded && latest ? (
+        <tr>
+          <td colSpan={7} className="bg-base-200/40">
+            <KeywordDetail row={row} latest={latest} domain={domain} />
+          </td>
+        </tr>
+      ) : null}
+    </Fragment>
+  );
+}
+
+function KeywordDetail({
+  row,
+  latest,
+  domain,
+}: {
+  row: AmazonRankKeywordView;
+  latest: AmazonRankCheckView;
+  domain: string;
+}) {
+  return (
+    <div className="grid gap-4 p-2 lg:grid-cols-[2fr_1fr]">
+      <div>
+        <h3 className="mb-2 text-sm font-semibold">
+          Top {latest.topResults.length} orgánico para “{row.keyword}”
+        </h3>
+        {latest.topResults.length === 0 ? (
+          <p className="text-xs text-base-content/60">Sin datos del top.</p>
+        ) : (
+          <table className="table table-xs">
+            <tbody>
+              {latest.topResults.map((top) => {
+                const isYou = top.asin?.toUpperCase() === row.asin;
+                return (
+                  <tr key={top.position} className={isYou ? "bg-primary/10" : ""}>
+                    <td className="w-8 font-semibold">#{top.position}</td>
+                    <td>
+                      {top.asin ? (
+                        <a
+                          href={`https://www.${domain}/dp/${top.asin}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="link link-hover"
+                        >
+                          {top.title ?? top.asin}
+                        </a>
+                      ) : (
+                        (top.title ?? "—")
+                      )}
+                      {isYou ? (
+                        <span className="badge badge-primary badge-xs ml-2">
+                          Tu producto
+                        </span>
+                      ) : null}
+                      {top.isAmazonChoice ? (
+                        <span className="badge badge-xs ml-1">Amazon's Choice</span>
+                      ) : null}
+                      {top.isBestSeller ? (
+                        <span className="badge badge-warning badge-xs ml-1">
+                          Más vendido
+                        </span>
+                      ) : null}
+                    </td>
+                    <td className="whitespace-nowrap">
+                      {top.price != null
+                        ? `${top.price.toFixed(2)} ${top.currency ?? ""}`
+                        : "—"}
+                    </td>
+                    <td className="whitespace-nowrap">
+                      {top.rating != null ? (
+                        <span className="inline-flex items-center gap-0.5">
+                          <Star className="size-3" />
+                          {top.rating}
+                          {top.votes != null ? ` (${top.votes})` : ""}
+                        </span>
+                      ) : (
+                        "—"
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+      </div>
+      <div>
+        <h3 className="mb-2 text-sm font-semibold">Historial</h3>
+        <table className="table table-xs">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Orgánica</th>
+              <th>Patroc.</th>
+            </tr>
+          </thead>
+          <tbody>
+            {row.history.map((check) => (
+              <tr key={check.checkedAt}>
+                <td className="whitespace-nowrap">
+                  {formatDate(check.checkedAt)}
+                </td>
+                <td>
+                  {check.organicPosition != null
+                    ? `#${check.organicPosition}`
+                    : "—"}
+                </td>
+                <td>
+                  {check.sponsoredPosition != null
+                    ? `#${check.sponsoredPosition}`
+                    : "—"}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+function Badges({ check }: { check: AmazonRankCheckView | null }) {
+  if (!check?.isAmazonChoice && !check?.isBestSeller) return null;
+  return (
+    <div className="flex flex-wrap gap-1">
+      {check.isAmazonChoice ? (
+        <span className="badge badge-xs gap-0.5">
+          <Award className="size-3" />
+          Amazon's Choice
+        </span>
+      ) : null}
+      {check.isBestSeller ? (
+        <span className="badge badge-warning badge-xs">Más vendido</span>
+      ) : null}
+    </div>
   );
 }
 

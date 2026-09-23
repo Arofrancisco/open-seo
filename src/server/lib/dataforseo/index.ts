@@ -41,6 +41,7 @@ export {
   type AmazonAsinTaskOutcome,
   type AmazonKeywordRank,
   type AmazonProductsTaskOutcome,
+  type AmazonTopResult,
   type AmazonSellerOffer,
   type AmazonSellersResult,
   type AmazonSellersTaskOutcome,

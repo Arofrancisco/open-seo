@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import {
+  boolean,
   index,
   integer,
   pgTable,
@@ -23,6 +24,8 @@ export const amazonRankKeywords = pgTable(
     asin: text("asin").notNull(),
     keyword: text("keyword").notNull(),
     marketplace: text("marketplace").notNull(),
+    pendingTaskId: text("pending_task_id"),
+    pendingSince: text("pending_since"),
     createdAt: text("created_at").notNull().default(isoNow),
   },
   (table) => [
@@ -46,6 +49,9 @@ export const amazonRankChecks = pgTable(
     organicPosition: integer("organic_position"),
     sponsoredPosition: integer("sponsored_position"),
     organicResultsScanned: integer("organic_results_scanned").notNull(),
+    isAmazonChoice: boolean("is_amazon_choice"),
+    isBestSeller: boolean("is_best_seller"),
+    topResults: text("top_results"),
   },
   (table) => [
     index("amazon_rank_checks_keyword_checked_idx").on(

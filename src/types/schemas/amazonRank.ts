@@ -31,6 +31,3 @@ export const amazonRankKeywordRefSchema = projectOnly.extend({
   keywordId: z.string().uuid(),
 });
 
-export const getAmazonRankCheckStatusSchema = amazonRankKeywordRefSchema.extend(
-  { taskId: z.string().min(1) },
-);

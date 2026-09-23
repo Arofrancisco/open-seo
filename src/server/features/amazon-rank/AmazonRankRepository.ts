@@ -2,8 +2,8 @@ import { and, desc, eq, inArray } from "drizzle-orm";
 import { db } from "@/db";
 import { amazonRankChecks, amazonRankKeywords } from "@/db/schema";
 
-type AmazonRankKeywordRow = typeof amazonRankKeywords.$inferSelect;
-type AmazonRankCheckRow = typeof amazonRankChecks.$inferSelect;
+export type AmazonRankKeywordRow = typeof amazonRankKeywords.$inferSelect;
+export type AmazonRankCheckRow = typeof amazonRankChecks.$inferSelect;
 
 async function listKeywords(projectId: string): Promise<AmazonRankKeywordRow[]> {
   return db
@@ -53,9 +53,29 @@ async function deleteKeyword(projectId: string, keywordId: string) {
     );
 }
 
+async function setPending(keywordId: string, taskId: string) {
+  await db
+    .update(amazonRankKeywords)
+    .set({ pendingTaskId: taskId, pendingSince: new Date().toISOString() })
+    .where(eq(amazonRankKeywords.id, keywordId));
+}
+
+/** Only clears when the stored task is still this one, so a newer check isn't lost. */
+async function clearPending(keywordId: string, taskId: string) {
+  await db
+    .update(amazonRankKeywords)
+    .set({ pendingTaskId: null, pendingSince: null })
+    .where(
+      and(
+        eq(amazonRankKeywords.id, keywordId),
+        eq(amazonRankKeywords.pendingTaskId, taskId),
+      ),
+    );
+}
+
 /**
  * The check id is the DataForSEO task id, so a result collected twice (two
- * overlapping polls) is stored once.
+ * overlapping list loads) is stored once.
  */
 async function recordCheck(row: typeof amazonRankChecks.$inferInsert) {
   await db.insert(amazonRankChecks).values(row).onConflictDoNothing();
@@ -77,6 +97,8 @@ export const AmazonRankRepository = {
   getKeyword,
   addKeyword,
   deleteKeyword,
+  setPending,
+  clearPending,
   recordCheck,
   listChecksForKeywords,
 } as const;
