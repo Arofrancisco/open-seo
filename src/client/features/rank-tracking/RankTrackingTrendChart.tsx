@@ -48,6 +48,9 @@ export function RankTrendChart({
   height = 224,
   renderTooltip,
   showBottomBand = false,
+  axisLabel = "Google position (1 = best)",
+  betterLabel = "Better",
+  tickFormatter = formatDateTick,
 }: {
   data: Array<Record<string, unknown>>;
   series: TrendSeries[];
@@ -57,15 +60,18 @@ export function RankTrendChart({
   /** Show the muted "not in top {serpDepth}" band — only meaningful for a
    * single keyword's position line, not for an averaged value. */
   showBottomBand?: boolean;
+  axisLabel?: string;
+  betterLabel?: string;
+  tickFormatter?: (value: number) => string;
 }) {
   const { containerRef, width: chartWidth } = useChartWidth();
 
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between text-[11px] text-base-content/50">
-        <span>Google position (1 = best)</span>
+        <span>{axisLabel}</span>
         <span className="inline-flex items-center gap-1">
-          Better <span aria-hidden>↑</span>
+          {betterLabel} <span aria-hidden>↑</span>
         </span>
       </div>
       <div ref={containerRef} className="w-full min-w-0" style={{ height }}>
@@ -97,7 +103,7 @@ export function RankTrendChart({
               type="number"
               scale="time"
               domain={["dataMin", "dataMax"]}
-              tickFormatter={formatDateTick}
+              tickFormatter={tickFormatter}
               tick={{ fontSize: 10, fill: "#888" }}
               tickLine={false}
               axisLine={false}

@@ -35,6 +35,10 @@ import {
   type AmazonMarketplaceCode,
 } from "@/shared/amazon-marketplaces";
 import {
+  AmazonAsinSummary,
+  AmazonPositionTrend,
+} from "@/client/features/amazon-rank/AmazonRankInsights";
+import {
   buildAmazonRankCsv,
   buildAmazonRankJson,
   downloadFile,
@@ -174,7 +178,10 @@ export function AmazonRankTrackingPage({ projectId }: Props) {
             para la que quieres saber su posición.
           </div>
         ) : (
-          <KeywordsTable projectId={projectId} keywords={keywords} />
+          <>
+            <AmazonAsinSummary keywords={keywords} />
+            <KeywordsTable projectId={projectId} keywords={keywords} />
+          </>
         )}
       </div>
     </div>
@@ -579,6 +586,10 @@ function KeywordDetail({
             ))}
           </tbody>
         </table>
+      </div>
+      <div className="lg:col-span-2">
+        <h3 className="mb-2 text-sm font-semibold">Evolución</h3>
+        <AmazonPositionTrend row={row} />
       </div>
     </div>
   );
