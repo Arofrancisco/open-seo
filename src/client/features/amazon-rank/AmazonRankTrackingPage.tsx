@@ -9,6 +9,7 @@ import {
   ChevronDown,
   ChevronRight,
   Download,
+  Info,
   ListOrdered,
   Minus,
   RefreshCw,
@@ -307,7 +308,17 @@ function KeywordsTable({
             <th>Palabra clave</th>
             <th>ASIN</th>
             <th>Orgánica</th>
-            <th>Patrocinada</th>
+            <th>
+              <span className="inline-flex items-center gap-1">
+                Patrocinada
+                <span
+                  className="tooltip tooltip-bottom"
+                  data-tip="Es una foto de una subasta en tiempo real, no una posición fija: cambia según la puja y el presupuesto de cada anunciante en ese instante. Orientativo, no sirve para decidir pujas."
+                >
+                  <Info className="size-3.5 text-base-content/50" />
+                </span>
+              </span>
+            </th>
             <th>Última comprobación</th>
             <th>Avisos</th>
             <th />
