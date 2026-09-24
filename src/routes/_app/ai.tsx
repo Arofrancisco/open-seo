@@ -12,7 +12,7 @@ import { AgentList } from "@/client/features/ai-mcp/AgentList";
 
 const DOCS_URL = "https://openseo.so/docs/agent-setup";
 const COACH_DOCS_URL = "https://openseo.so/docs/skills/seo-coach";
-// Type 1 skills call OpenSEO's MCP tools for live project data; type 2 skills
+// Type 1 skills call PlanetaSEO's MCP tools for live project data; type 2 skills
 // are methodology only (no tool calls), so they also work as a downloadable
 // guide. Our own skills have no page on the upstream docs site, so they link
 // to their source file on the fork instead.

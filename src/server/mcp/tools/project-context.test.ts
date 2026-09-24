@@ -145,7 +145,7 @@ describe("get_project_context", () => {
         name: "Monthly client check-in",
         description: "The monthly update we send retainer clients.",
         instructions: "Audience: the client's marketing lead.",
-        createdBy: "OpenSEO app",
+        createdBy: "PlanetaSEO app",
         createdByUserId: "user_1",
         createdAt: "2026-09-01T10:00:00.000Z",
         updatedAt: "2026-09-01T10:00:00.000Z",

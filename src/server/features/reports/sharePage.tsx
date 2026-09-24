@@ -12,7 +12,7 @@ import { domainField } from "@/types/schemas/domain";
 // The public face of a shared report, `/s/<token>`: a slim bar and the
 // document in the same sandboxed frame the in-app viewer uses. Rendered to a
 // static string on the server rather than served as a React route, because the
-// reader is usually someone who has never opened OpenSEO: the app's root shell
+// reader is usually someone who has never opened PlanetaSEO: the app's root shell
 // renders only on the client, so a route inside it cost them the whole app
 // bundle (~400 KB gzipped) downloaded, parsed and hydrated before the frame
 // even existed. This page puts the frame in the first response and ships no
@@ -88,7 +88,7 @@ function TryButton() {
       target="_blank"
       rel="noreferrer"
     >
-      Try OpenSEO
+      Try PlanetaSEO
     </a>
   );
 }
@@ -111,7 +111,7 @@ function Document({
           content="width=device-width, initial-scale=1, viewport-fit=cover"
         />
         <meta name="robots" content="noindex, nofollow" />
-        <title>{`${title} · OpenSEO`}</title>
+        <title>{`${title} · PlanetaSEO`}</title>
         {head}
         <link rel="icon" href="/favicon.ico" />
         <style dangerouslySetInnerHTML={{ __html: STYLES }} />
@@ -195,7 +195,7 @@ export async function renderSharePage(
       head={
         <>
           <meta property="og:type" content="article" />
-          <meta property="og:site_name" content="OpenSEO" />
+          <meta property="og:site_name" content="PlanetaSEO" />
           <meta property="og:title" content={report.title} />
           <meta name="twitter:title" content={report.title} />
           {description ? (
@@ -208,11 +208,11 @@ export async function renderSharePage(
           <meta property="og:image" content={imageUrl} />
           <meta property="og:image:width" content="1200" />
           <meta property="og:image:height" content="630" />
-          <meta property="og:image:alt" content={`${report.title} · OpenSEO`} />
+          <meta property="og:image:alt" content={`${report.title} · PlanetaSEO`} />
           <meta name="twitter:image" content={imageUrl} />
           <meta
             name="twitter:image:alt"
-            content={`${report.title} · OpenSEO`}
+            content={`${report.title} · PlanetaSEO`}
           />
           <meta name="twitter:card" content="summary_large_image" />
         </>
@@ -222,7 +222,7 @@ export async function renderSharePage(
         <div className="title">
           <h1>{report.title}</h1>
           <p className="meta">
-            Made with OpenSEO · Updated {formatRelativeTime(report.updatedAt)}
+            Made with PlanetaSEO · Updated {formatRelativeTime(report.updatedAt)}
           </p>
         </div>
         <div className="actions">

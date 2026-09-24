@@ -1,36 +1,30 @@
 ---
 name: setup-openseo
-description: Set up OpenSEO in the current AI agent. Use when a user pastes the OpenSEO installation prompt or asks to connect its plugin, MCP, and skills.
+description: Set up PlanetaSEO in the current AI agent. Use when a user pastes the PlanetaSEO installation prompt or asks to connect its MCP and skills.
 metadata:
   internal: true
 ---
 
-Set up OpenSEO in this agent. Do what you can; guide me through anything that needs my input.
+Set up PlanetaSEO in this agent. Do what you can; guide me through anything that needs my input.
+
+This is a self-hosted, single-deployment instance — there is no published plugin or public
+docs site to link to. Everything needed lives at this one origin and in this one GitHub fork.
 
 ## 1. Check this agent
 
 - Identify this agent and its version. Ask only if you cannot tell.
-- Check for an existing OpenSEO connection. Preserve other integrations and avoid duplicates.
+- Check for an existing PlanetaSEO connection. Preserve other integrations and avoid duplicates.
 
-## 2. Install the plugin first
+## 2. Connect MCP
 
-The official plugin bundles MCP + SEO skills, with OpenSEO namespacing and shared updates.
-
-- **Codex:** follow the [plugin guide](https://openseo.so/docs/codex-plugin).
-- **Claude Code:** follow the [plugin guide](https://openseo.so/docs/claude-code-plugin).
-- **Other agents:** verify plugin compatibility in their current documentation.
+- Add `https://app.openseo.so/mcp` as an MCP server using this agent's native flow (settings, config file, or CLI command — whichever it supports).
 - Check the installed client's help before running commands.
 
-## 3. Fall back to MCP + skills
+## 3. Install the skills
 
-If the plugin is unsupported:
-
-- Add `https://app.openseo.so/mcp` using the [MCP guide](https://openseo.so/docs/mcp).
-- Install the [public SEO skills](https://openseo.so/docs/skills/setup) for this agent only.
-- Do not copy internal repository skills or duplicate bundled skills.
-- If skills are unsupported, use MCP alone and link to the workflow guides.
-
-For self-hosted OpenSEO, use its endpoint directly; the official plugin targets the hosted service.
+- Install the public skills for this agent only: `npx skills add Arofrancisco/open-seo`.
+- Do not copy internal repository skills (marked `internal: true` in their frontmatter) or duplicate bundled skills.
+- If the `skills` CLI or skill installation is unsupported by this agent, use MCP alone and read each skill's `SKILL.md` directly from `https://github.com/Arofrancisco/open-seo/tree/main/.agents/skills` for the workflow steps.
 
 ## 4. Sign in
 
@@ -53,7 +47,7 @@ Keep progress updates brief. The final reply must be **140 words or fewer** and 
 [Briefly say what succeeded or what blocked setup.]
 
 **Next**
-1. `[Give the native reload command or UI action for this agent, only if needed.]` Then say “Check that OpenSEO is connected.” Approve sign-in if prompted.
+1. `[Give the native reload command or UI action for this agent, only if needed.]` Then say “Check that PlanetaSEO is connected.” Approve sign-in if prompted.
 2. Try one of these:
    - `[SEO Audit invocation]` **(recommended)** — find your website's biggest SEO issues.
    - `[SEO Project Setup invocation]` — interview you about your website and set up its project context.

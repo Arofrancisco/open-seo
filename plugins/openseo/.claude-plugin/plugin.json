@@ -1,14 +1,14 @@
 {
-  "name": "openseo",
-  "displayName": "OpenSEO",
+  "name": "planetaseo",
+  "displayName": "PlanetaSEO",
   "version": "1.0.0",
-  "description": "Without good data, your agent gives generic advice. Keyword research, competitor research, backlinks, and site audits. All for $10/month.",
+  "description": "Without good data, your agent gives generic advice. Keyword research, competitor research, backlinks, site audits, and Amazon research.",
   "author": {
-    "name": "OpenSEO",
-    "url": "https://openseo.so"
+    "name": "PlanetaSEO",
+    "url": "https://openseo.planetaprime.com"
   },
-  "homepage": "https://openseo.so",
-  "repository": "https://github.com/every-app/open-seo",
+  "homepage": "https://openseo.planetaprime.com",
+  "repository": "https://github.com/Arofrancisco/open-seo",
   "license": "MIT",
   "keywords": [
     "seo",
@@ -18,12 +18,13 @@
     "backlinks",
     "search-console",
     "rank-tracking",
-    "local-seo"
+    "local-seo",
+    "amazon"
   ],
   "mcpServers": {
-    "openseo": {
+    "planetaseo": {
       "type": "http",
-      "url": "https://app.openseo.so/mcp"
+      "url": "https://openseo.planetaprime.com/mcp"
     }
   }
 }

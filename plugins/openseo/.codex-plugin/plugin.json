@@ -1,13 +1,13 @@
 {
-  "name": "openseo",
+  "name": "planetaseo",
   "version": "1.0.0",
-  "description": "Without good data, your agent gives generic advice. Keyword research, competitor research, backlinks, and site audits. All for $10/month.",
+  "description": "Without good data, your agent gives generic advice. Keyword research, competitor research, backlinks, site audits, and Amazon research.",
   "author": {
-    "name": "OpenSEO",
-    "url": "https://openseo.so"
+    "name": "PlanetaSEO",
+    "url": "https://openseo.planetaprime.com"
   },
-  "homepage": "https://openseo.so",
-  "repository": "https://github.com/every-app/open-seo",
+  "homepage": "https://openseo.planetaprime.com",
+  "repository": "https://github.com/Arofrancisco/open-seo",
   "license": "MIT",
   "keywords": [
     "seo",
@@ -17,28 +17,30 @@
     "backlinks",
     "search-console",
     "rank-tracking",
-    "local-seo"
+    "local-seo",
+    "amazon"
   ],
   "skills": "./skills/",
   "mcpServers": {
-    "openseo": {
-      "url": "https://app.openseo.so/mcp"
+    "planetaseo": {
+      "url": "https://openseo.planetaprime.com/mcp"
     }
   },
   "interface": {
-    "displayName": "OpenSEO",
-    "shortDescription": "Without good data, your agent gives generic advice. Keyword research, competitor research, backlinks, and site audits. All for $10/month.",
-    "longDescription": "Without good data, your agent gives generic advice. Keyword research, competitor research, backlinks, and site audits. All for $10/month.",
-    "developerName": "OpenSEO",
+    "displayName": "PlanetaSEO",
+    "shortDescription": "Without good data, your agent gives generic advice. Keyword research, competitor research, backlinks, site audits, and Amazon research.",
+    "longDescription": "Without good data, your agent gives generic advice. Keyword research, competitor research, backlinks, site audits, and Amazon research.",
+    "developerName": "PlanetaSEO",
     "category": "Productivity",
     "capabilities": ["Interactive"],
-    "websiteURL": "https://openseo.so",
-    "privacyPolicyURL": "https://openseo.so/privacy",
-    "termsOfServiceURL": "https://openseo.so/terms-and-conditions",
+    "websiteURL": "https://openseo.planetaprime.com",
+    "privacyPolicyURL": "https://planetaprime.com/aviso-legal/",
+    "termsOfServiceURL": "https://planetaprime.com/aviso-legal/",
     "defaultPrompt": [
       "Research keywords for my site and shortlist the best opportunities.",
       "Audit my site and give me a one-page report with a single next action.",
-      "Track my rankings for these keywords and summarize what changed."
+      "Track my rankings for these keywords and summarize what changed.",
+      "Look up an ASIN and track its position for a keyword on Amazon."
     ]
   }
 }

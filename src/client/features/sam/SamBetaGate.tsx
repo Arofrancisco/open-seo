@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { Sparkles } from "lucide-react";
 
 /**
- * Shown on the chat route until the user opts into Sam. Sam is the OpenSEO
+ * Shown on the chat route until the user opts into Sam. Sam is the PlanetaSEO
  * MCP plus skills wrapped in an in-app chat; the agents people already use
  * run that same toolset with a more mature harness, so the primary action
  * points there and Sam is the explicit fallback.

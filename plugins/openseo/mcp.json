@@ -1,7 +1,7 @@
 {
   "mcpServers": {
-    "openseo": {
-      "url": "https://app.openseo.so/mcp"
+    "planetaseo": {
+      "url": "https://openseo.planetaprime.com/mcp"
     }
   }
 }

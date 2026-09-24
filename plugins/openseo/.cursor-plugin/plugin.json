@@ -1,13 +1,12 @@
 {
-  "name": "openseo",
+  "name": "planetaseo",
   "version": "1.0.0",
-  "description": "SEO made simple. Research keywords and competitors, audit sites, track rankings, and use Search Console data from your agent.",
+  "description": "SEO made simple. Research keywords and competitors, audit sites, track rankings, use Search Console data, and research Amazon listings from your agent.",
   "author": {
-    "name": "Every App, Inc",
-    "email": "support@openseo.so"
+    "name": "PlanetaSEO"
   },
-  "homepage": "https://openseo.so",
-  "repository": "https://github.com/every-app/open-seo",
+  "homepage": "https://openseo.planetaprime.com",
+  "repository": "https://github.com/Arofrancisco/open-seo",
   "license": "MIT",
   "keywords": [
     "seo",
@@ -17,9 +16,10 @@
     "backlinks",
     "search-console",
     "rank-tracking",
-    "local-seo"
+    "local-seo",
+    "amazon"
   ],
-  "logo": "https://raw.githubusercontent.com/every-app/open-seo/main/public/transparent-logo.png",
+  "logo": "https://raw.githubusercontent.com/Arofrancisco/open-seo/main/public/transparent-logo.png",
   "skills": "skills",
   "mcpServers": "mcp.json"
 }

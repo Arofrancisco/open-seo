@@ -23,7 +23,7 @@ import { markDashboardCompetitorClicked } from "@/serverFunctions/dashboard";
 import type { DashboardSetupStep } from "@/types/schemas/dashboard";
 import { parseResearchTarget } from "@/shared/researchScope";
 
-const projectPrompt = `Usa OpenSEO para configurar un proyecto separado para cada web de abajo. Lista primero mis proyectos existentes y reutiliza las coincidencias para no crear duplicados. Configura el país y el idioma de cada web, y pregúntame por cualquier dato que falte.
+const projectPrompt = `Usa PlanetaSEO para configurar un proyecto separado para cada web de abajo. Lista primero mis proyectos existentes y reutiliza las coincidencias para no crear duplicados. Configura el país y el idioma de cada web, y pregúntame por cualquier dato que falte.
 
 Sustituye esta lista por mis webs:
 - Nombre del proyecto — web — país — idioma`;
