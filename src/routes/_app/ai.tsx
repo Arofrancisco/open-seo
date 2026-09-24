@@ -12,27 +12,95 @@ import { AgentList } from "@/client/features/ai-mcp/AgentList";
 
 const DOCS_URL = "https://openseo.so/docs/agent-setup";
 const COACH_DOCS_URL = "https://openseo.so/docs/skills/seo-coach";
-const SKILLS = [
-  ["seo-coach", "Explains where you stand and picks your next step."],
-  [
-    "seo-project-setup",
-    "Saves your goals, competitors, and key pages as shared context.",
-  ],
-  [
-    "seo-audit",
-    "One-page site audit built around a single do-this-week action.",
-  ],
-  ["keyword-research", "Finds keyword opportunities from a few seed topics."],
-  ["keyword-clustering", "Groups keywords by intent and maps them to pages."],
-  ["competitive-landscape", "Maps who wins in your market and why."],
-  [
-    "competitor-analysis",
-    "Studies one competitor's keywords, content, and backlinks.",
-  ],
-  ["link-prospecting", "Finds link prospects and drafts outreach."],
-  ["local-seo", "Audits a Google Business Profile and Maps visibility."],
-  ["seo-report", "Saves any of the above as a report on your Reports page."],
+// Type 1 skills call OpenSEO's MCP tools for live project data; type 2 skills
+// are methodology only (no tool calls), so they also work as a downloadable
+// guide. Our own skills have no page on the upstream docs site, so they link
+// to their source file on the fork instead.
+type SkillEntry = {
+  name: string;
+  blurb: string;
+  type: 1 | 2;
+  href?: string;
+};
+
+const FORK_SKILLS_URL =
+  "https://github.com/Arofrancisco/open-seo/blob/main/.agents/skills";
+
+const SKILLS: SkillEntry[] = [
+  {
+    name: "seo-coach",
+    blurb: "Te dice dónde estás y cuál es tu siguiente paso.",
+    type: 1,
+  },
+  {
+    name: "seo-project-setup",
+    blurb:
+      "Guarda tus objetivos, competidores y páginas clave como contexto compartido.",
+    type: 1,
+  },
+  {
+    name: "seo-audit",
+    blurb: "Auditoría de una página centrada en una sola acción para esta semana.",
+    type: 1,
+  },
+  {
+    name: "keyword-research",
+    blurb: "Encuentra oportunidades de keywords a partir de unos pocos temas.",
+    type: 1,
+  },
+  {
+    name: "keyword-clustering",
+    blurb: "Agrupa keywords por intención y las asigna a páginas.",
+    type: 1,
+  },
+  {
+    name: "competitive-landscape",
+    blurb: "Muestra quién gana en tu mercado y por qué.",
+    type: 1,
+  },
+  {
+    name: "competitor-analysis",
+    blurb: "Estudia las keywords, el contenido y los backlinks de un competidor.",
+    type: 1,
+  },
+  {
+    name: "link-prospecting",
+    blurb: "Encuentra dónde conseguir enlaces y redacta el contacto.",
+    type: 1,
+  },
+  {
+    name: "local-seo",
+    blurb: "Audita un perfil de Google Business y la visibilidad en Maps.",
+    type: 1,
+  },
+  {
+    name: "seo-report",
+    blurb: "Guarda cualquiera de las anteriores como informe en tu página de Informes.",
+    type: 1,
+  },
+  {
+    name: "amazon-ai-search-readiness",
+    blurb:
+      "Revisa una ficha de Amazon para que Rufus y Alexa la entiendan y la recomienden.",
+    type: 2,
+    href: `${FORK_SKILLS_URL}/amazon-ai-search-readiness/SKILL.md`,
+  },
 ];
+
+const SKILL_TYPES = [
+  {
+    type: 1,
+    title: "Tipo 1 · Con datos en vivo",
+    description:
+      "Tu agente consulta datos reales de tu proyecto en OpenSEO (keywords, backlinks, auditorías…) y te entrega un informe con cifras. Necesitan el agente conectado por MCP y gastan créditos cuando piden datos.",
+  },
+  {
+    type: 2,
+    title: "Tipo 2 · De conocimiento",
+    description:
+      "Metodología y checklists de experto: tu agente sigue los pasos con su propio razonamiento. No necesitan conexión MCP ni gastan créditos, y puedes abrirlas y descargarlas para usarlas como guía.",
+  },
+] as const;
 
 export const Route = createFileRoute("/_app/ai")({
   component: AiPage,
@@ -181,27 +249,46 @@ function AiPage() {
         ) : (
           <section className="mt-6">
             <p className="text-sm text-base-content/60">
-              The setup prompt installs these. Run one by name when you want a
-              full report instead of a quick answer.
+              Una skill es una receta de instrucciones que sigue tu agente de IA
+              (Claude, ChatGPT…). Escribe su nombre, por ejemplo /seo-audit,
+              cuando quieras un informe completo en vez de una respuesta
+              rápida. Hay dos tipos:
             </p>
-            <ul className="mt-5 space-y-3 text-sm sm:space-y-2">
-              {SKILLS.map(([name, blurb]) => (
-                <li
-                  key={name}
-                  className="flex flex-col gap-0.5 sm:flex-row sm:gap-3"
-                >
-                  <a
-                    href={`https://openseo.so/docs/skills/${name}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="shrink-0 font-mono text-[13px] text-base-content underline decoration-base-content/25 underline-offset-4 hover:decoration-base-content sm:w-48"
-                  >
-                    /{name}
-                  </a>
-                  <span className="text-base-content/60">{blurb}</span>
-                </li>
-              ))}
-            </ul>
+            {SKILL_TYPES.map((group) => {
+              const skills = SKILLS.filter((skill) => skill.type === group.type);
+              if (skills.length === 0) return null;
+              return (
+                <div key={group.type} className="mt-6">
+                  <h3 className="text-sm font-semibold">{group.title}</h3>
+                  <p className="mt-1 text-sm text-base-content/60">
+                    {group.description}
+                  </p>
+                  <ul className="mt-3 space-y-3 text-sm sm:space-y-2">
+                    {skills.map((skill) => (
+                      <li
+                        key={skill.name}
+                        className="flex flex-col gap-0.5 sm:flex-row sm:gap-3"
+                      >
+                        <a
+                          href={
+                            skill.href ??
+                            `https://openseo.so/docs/skills/${skill.name}`
+                          }
+                          target="_blank"
+                          rel="noreferrer"
+                          className="shrink-0 font-mono text-[13px] text-base-content underline decoration-base-content/25 underline-offset-4 hover:decoration-base-content sm:w-56"
+                        >
+                          /{skill.name}
+                        </a>
+                        <span className="text-base-content/60">
+                          {skill.blurb}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              );
+            })}
           </section>
         )}
       </div>
