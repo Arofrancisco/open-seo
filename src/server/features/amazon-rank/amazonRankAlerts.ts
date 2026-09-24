@@ -46,16 +46,21 @@ export function computeAmazonRankAlerts(
     alerts.push({ type: "lost_best_seller" });
   }
 
-  const own = ownAsin.toUpperCase();
-  const previousAsins = new Set(
-    previous.topResults
-      .map((item) => item.asin?.toUpperCase())
-      .filter((asin): asin is string => Boolean(asin) && asin !== own),
-  );
-  for (const item of latest.topResults) {
-    const asin = item.asin?.toUpperCase();
-    if (!asin || asin === own || previousAsins.has(asin)) continue;
-    alerts.push({ type: "new_competitor", asin, title: item.title });
+  // An empty previous top-5 means no baseline (e.g. a check recorded before
+  // this field existed), not that the results list was genuinely empty —
+  // comparing against it would flag every current entry as "new".
+  if (previous.topResults.length > 0) {
+    const own = ownAsin.toUpperCase();
+    const previousAsins = new Set(
+      previous.topResults
+        .map((item) => item.asin?.toUpperCase())
+        .filter((asin): asin is string => Boolean(asin) && asin !== own),
+    );
+    for (const item of latest.topResults) {
+      const asin = item.asin?.toUpperCase();
+      if (!asin || asin === own || previousAsins.has(asin)) continue;
+      alerts.push({ type: "new_competitor", asin, title: item.title });
+    }
   }
 
   return alerts;
