@@ -92,7 +92,7 @@ const SKILL_TYPES = [
     type: 1,
     title: "Tipo 1 · Con datos en vivo",
     description:
-      "Tu agente consulta datos reales de tu proyecto en OpenSEO (keywords, backlinks, auditorías…) y te entrega un informe con cifras. Necesitan el agente conectado por MCP y gastan créditos cuando piden datos.",
+      "Tu agente consulta datos reales de tu proyecto en PlanetaSEO (keywords, backlinks, auditorías…) y te entrega un informe con cifras. Necesitan el agente conectado por MCP y gastan créditos cuando piden datos.",
   },
   {
     type: 2,
@@ -120,7 +120,7 @@ function AiPage() {
       <div className="mx-auto max-w-2xl">
         <h1 className="text-2xl font-semibold tracking-tight">Agent setup</h1>
         <p className="mt-3 text-pretty text-sm leading-relaxed text-base-content/70">
-          The most powerful way to use OpenSEO is through the AI agent you
+          The most powerful way to use PlanetaSEO is through the AI agent you
           already use. Set it up once, then ask it anything.
         </p>
 
@@ -150,7 +150,7 @@ function AiPage() {
               <section className="rounded-xl border border-base-300 p-5 sm:p-6">
                 <h2 className="text-base font-semibold">Set up your agent</h2>
                 <p className="mt-2 text-sm leading-relaxed text-base-content/60">
-                  Paste the setup prompt into your agent to connect OpenSEO and
+                  Paste the setup prompt into your agent to connect PlanetaSEO and
                   install its SEO skills. It will guide you through any manual
                   steps.
                 </p>
@@ -191,7 +191,7 @@ function AiPage() {
                 <h2 className="text-base font-semibold">Update your skills</h2>
                 <p className="mt-2 text-sm leading-relaxed text-base-content/60">
                   Already connected? Paste the update prompt into your agent to
-                  get the latest OpenSEO skills while preserving your connection
+                  get the latest PlanetaSEO skills while preserving your connection
                   settings and personal edits.
                 </p>
                 <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-3 [&>button]:h-11 [&>button]:gap-2 [&>button]:text-sm">

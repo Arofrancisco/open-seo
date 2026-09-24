@@ -17,10 +17,10 @@ export function SamBetaGate({ onContinue }: { onContinue: () => void }) {
         <h2 className="mt-4 text-xl font-semibold">Sam is in beta</h2>
         <div className="mt-3 space-y-3 text-sm leading-relaxed text-base-content/70">
           <p>
-            Sam is the OpenSEO MCP and skills wrapped in a chat window. The
+            Sam is the PlanetaSEO MCP and skills wrapped in a chat window. The
             agent you already use, like Claude Code, ChatGPT, Grok Bot, or
             Hermes, runs that same toolset on a much more capable harness. We
-            recommend using OpenSEO there.
+            recommend using PlanetaSEO there.
           </p>
           <p>You can still use Sam, but it is early and has rough edges.</p>
         </div>

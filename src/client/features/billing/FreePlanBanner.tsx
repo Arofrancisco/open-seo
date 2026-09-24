@@ -58,7 +58,7 @@ export function FreePlanBanner() {
     return (
       <BannerShell variant="error">
         You&rsquo;ve used all your credits. {creditsActionLink} to continue
-        using OpenSEO.
+        using PlanetaSEO.
       </BannerShell>
     );
   }
@@ -67,7 +67,7 @@ export function FreePlanBanner() {
     return (
       <BannerShell variant="warning">
         You&rsquo;re running low on credits. {creditsActionLink} to keep using
-        OpenSEO.
+        PlanetaSEO.
       </BannerShell>
     );
   }
@@ -75,7 +75,7 @@ export function FreePlanBanner() {
   if (isFreePlan) {
     return (
       <BannerShell variant="info">
-        We hope you&rsquo;re enjoying OpenSEO!{" "}
+        We hope you&rsquo;re enjoying PlanetaSEO!{" "}
         <Link
           to={SUBSCRIBE_ROUTE}
           search={{ upgrade: true }}

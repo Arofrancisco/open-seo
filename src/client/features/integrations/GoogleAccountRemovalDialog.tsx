@@ -78,7 +78,7 @@ export function GoogleAccountRemovalDialog({
         </h3>
         <p className="break-all text-sm font-medium">{label}</p>
         <p className="text-sm text-base-content/70">
-          Esto elimina la conexión de {name} de esta cuenta en OpenSEO. Puedes
+          Esto elimina la conexión de {name} de esta cuenta en PlanetaSEO. Puedes
           reconectarla cuando quieras.
         </p>
         {impact.isPending ? (

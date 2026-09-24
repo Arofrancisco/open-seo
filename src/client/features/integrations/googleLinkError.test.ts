@@ -31,9 +31,9 @@ describe("Google link callback errors", () => {
     const error = errors.getGoogleLinkError("gsc");
     expect(error).toEqual({ code: "account_already_linked_to_different_user" });
     const copy = googleAuthErrorCopy(error!.code, "Search Console");
-    expect(copy.title).toBe("Google account already connected");
+    expect(copy.title).toBe("Esa cuenta de Google ya está conectada");
     expect(copy.description).toContain(
-      "Sign in to the OpenSEO user that linked it",
+      "Inicia sesión con el usuario de PlanetaSEO que la conectó",
     );
     expect(location.href).toBe(
       "https://app.example.com/p/project-a#connect-gsc",

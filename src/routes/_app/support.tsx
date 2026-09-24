@@ -5,7 +5,7 @@ import { toast } from "sonner";
 
 const SUPPORT_EMAIL = "arofrancisco@planetaprime.com";
 const SUPPORT_WHATSAPP_URL =
-  "https://wa.me/34643854237?text=Hola%2C%20tengo%20una%20duda%20sobre%20OpenSEO";
+  "https://wa.me/34643854237?text=Hola%2C%20tengo%20una%20duda%20sobre%20PlanetaSEO";
 
 export const Route = createFileRoute("/_app/support")({
   component: SupportPage,

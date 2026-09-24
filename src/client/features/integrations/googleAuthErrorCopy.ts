@@ -33,8 +33,8 @@ export function googleAuthErrorCopy(
       return {
         title: "Esa cuenta de Google ya está conectada",
         description: providerLabel
-          ? `Inicia sesión con el usuario de OpenSEO que la conectó, abre el selector de propiedad de ${providerLabel} y elige "Quitar cuenta" junto a la cuenta de Google. Luego conéctala aquí.`
-          : "Esa cuenta de Google ya está vinculada a otro usuario de OpenSEO. Inicia sesión con ese usuario, o contacta con soporte.",
+          ? `Inicia sesión con el usuario de PlanetaSEO que la conectó, abre el selector de propiedad de ${providerLabel} y elige "Quitar cuenta" junto a la cuenta de Google. Luego conéctala aquí.`
+          : "Esa cuenta de Google ya está vinculada a otro usuario de PlanetaSEO. Inicia sesión con ese usuario, o contacta con soporte.",
       };
     default:
       return {

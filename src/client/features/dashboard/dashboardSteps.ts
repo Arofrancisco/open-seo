@@ -30,7 +30,7 @@ export const setupSteps: {
   {
     id: "mcp",
     label: "Conecta tu agente de IA",
-    detail: "Usa OpenSEO desde Claude o tu agente favorito.",
+    detail: "Usa PlanetaSEO desde Claude o tu agente favorito.",
     icon: Bot,
   },
   {

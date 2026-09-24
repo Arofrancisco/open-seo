@@ -19,7 +19,7 @@ import {
 
 const SUPPORT_EMAIL = "arofrancisco@planetaprime.com";
 const SUPPORT_WHATSAPP_URL =
-  "https://wa.me/34643854237?text=Hola%2C%20tengo%20una%20duda%20sobre%20mi%20suscripci%C3%B3n%20de%20OpenSEO";
+  "https://wa.me/34643854237?text=Hola%2C%20tengo%20una%20duda%20sobre%20mi%20suscripci%C3%B3n%20de%20PlanetaSEO";
 
 const PLAN_FEATURES = [
   "Keyword research, backlinks, seguimiento de posiciones y auditorías de sitio",
@@ -138,7 +138,7 @@ function SubscribePage() {
       <div className="w-full max-w-xs space-y-4 text-center">
         <img
           src="/transparent-logo.png"
-          alt="OpenSEO"
+          alt="PlanetaSEO"
           className="mx-auto size-10 rounded-lg"
         />
         <h1 className="text-xl font-semibold">
@@ -165,7 +165,7 @@ function SubscribePage() {
         <div className="text-center space-y-3">
           <img
             src="/transparent-logo.png"
-            alt="OpenSEO"
+            alt="PlanetaSEO"
             className="mx-auto size-10 rounded-lg"
           />
           <h1 className="text-xl font-semibold">Billing unavailable</h1>
@@ -225,7 +225,7 @@ function SubscribePage() {
       <div className="text-center space-y-3">
         <img
           src="/transparent-logo.png"
-          alt="OpenSEO"
+          alt="PlanetaSEO"
           className="mx-auto size-10 rounded-lg"
         />
         <h1 className="text-xl font-semibold">
