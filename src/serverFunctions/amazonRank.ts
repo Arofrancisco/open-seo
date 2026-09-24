@@ -14,6 +14,7 @@ export type {
   AmazonRankCheckView,
   AmazonRankKeywordView,
 } from "@/server/features/amazon-rank/AmazonRankService";
+export type { AmazonRankAlert } from "@/server/features/amazon-rank/amazonRankAlerts";
 
 // Loading the list also collects any finished pending checks, so a result
 // lands even when the page was closed while the check ran.

@@ -14,6 +14,7 @@ import {
   RefreshCw,
   Star,
   Trash2,
+  TriangleAlert,
 } from "lucide-react";
 import {
   addAmazonRankKeyword,
@@ -22,6 +23,7 @@ import {
   listAmazonRankKeywords,
   startAllAmazonRankChecks,
   startAmazonRankCheck,
+  type AmazonRankAlert,
   type AmazonRankCheckView,
   type AmazonRankKeywordView,
 } from "@/serverFunctions/amazonRank";
@@ -307,6 +309,7 @@ function KeywordsTable({
             <th>Orgánica</th>
             <th>Patrocinada</th>
             <th>Última comprobación</th>
+            <th>Avisos</th>
             <th />
           </tr>
         </thead>
@@ -414,6 +417,9 @@ function KeywordRow({
               : "Nunca"}
         </td>
         <td>
+          <AlertsBadge alerts={row.alerts} />
+        </td>
+        <td>
           <div className="flex justify-end gap-1">
             <button
               type="button"
@@ -448,7 +454,7 @@ function KeywordRow({
       </tr>
       {expanded && latest ? (
         <tr>
-          <td colSpan={7} className="bg-base-200/40">
+          <td colSpan={8} className="bg-base-200/40">
             <KeywordDetail row={row} latest={latest} domain={domain} />
           </td>
         </tr>
@@ -563,6 +569,36 @@ function KeywordDetail({
           </tbody>
         </table>
       </div>
+    </div>
+  );
+}
+
+function alertText(alert: AmazonRankAlert): string {
+  switch (alert.type) {
+    case "position_drop":
+      return `Cayó de #${alert.from} a #${alert.to}`;
+    case "fell_out_of_results":
+      return "Salió de los resultados";
+    case "lost_amazon_choice":
+      return "Perdió Amazon's Choice";
+    case "lost_best_seller":
+      return "Perdió la etiqueta de Más vendido";
+    case "new_competitor":
+      return `Nuevo competidor en el top 5: ${alert.title ?? alert.asin}`;
+  }
+}
+
+function AlertsBadge({ alerts }: { alerts: AmazonRankAlert[] }) {
+  if (alerts.length === 0) return <span className="text-base-content/30">—</span>;
+  return (
+    <div
+      className="tooltip tooltip-left"
+      data-tip={alerts.map(alertText).join(" · ")}
+    >
+      <span className="badge badge-error gap-1 whitespace-nowrap">
+        <TriangleAlert className="size-3" />
+        {alerts.length === 1 ? alertText(alerts[0]) : `${alerts.length} avisos`}
+      </span>
     </div>
   );
 }

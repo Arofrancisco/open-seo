@@ -14,6 +14,10 @@ import {
   type AmazonRankCheckRow,
   type AmazonRankKeywordRow,
 } from "@/server/features/amazon-rank/AmazonRankRepository";
+import {
+  computeAmazonRankAlerts,
+  type AmazonRankAlert,
+} from "@/server/features/amazon-rank/amazonRankAlerts";
 
 // A pending task that still can't be collected after this long is dropped so
 // the row doesn't spin forever (DataForSEO keeps results ~30 days, but the
@@ -39,6 +43,8 @@ export type AmazonRankKeywordView = {
   pending: boolean;
   /** Newest first. */
   history: AmazonRankCheckView[];
+  /** Computed from the two most recent checks; empty on the first check. */
+  alerts: AmazonRankAlert[];
 };
 
 function parseTopResults(raw: string | null): AmazonTopResult[] {
@@ -110,14 +116,21 @@ async function listKeywordViews(
     if (list.length < historyLimit) list.push(toCheckView(check));
     byKeyword.set(check.keywordId, list);
   }
-  return keywords.map((keyword, index) => ({
-    id: keyword.id,
-    asin: keyword.asin,
-    keyword: keyword.keyword,
-    marketplace: keyword.marketplace as AmazonMarketplaceCode,
-    pending: stillPending[index] ?? false,
-    history: byKeyword.get(keyword.id) ?? [],
-  }));
+  return keywords.map((keyword, index) => {
+    const history = byKeyword.get(keyword.id) ?? [];
+    const [latest = null, previous = null] = history;
+    return {
+      id: keyword.id,
+      asin: keyword.asin,
+      keyword: keyword.keyword,
+      marketplace: keyword.marketplace as AmazonMarketplaceCode,
+      pending: stillPending[index] ?? false,
+      history,
+      alerts: latest
+        ? computeAmazonRankAlerts(latest, previous, keyword.asin)
+        : [],
+    };
+  });
 }
 
 async function postCheck(
