@@ -6,11 +6,22 @@ import { RankTrendChart } from "@/client/features/rank-tracking/RankTrackingTren
 // system. Validated against the light and dark surfaces (dataviz validator).
 const ORGANIC_COLOR = "#2563eb";
 const DEFAULT_DEPTH = 100;
+const NICE_UPPER_BOUNDS = [5, 10, 20, 50, 100];
+const TWO_DAYS_MS = 2 * 24 * 60 * 60 * 1000;
 
 function formatShortDate(value: number) {
   return new Date(value).toLocaleDateString("es-ES", {
     day: "numeric",
     month: "short",
+  });
+}
+
+function formatDateTime(value: number) {
+  return new Date(value).toLocaleString("es-ES", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 }
 
@@ -38,11 +49,20 @@ export function AmazonPositionTrend({ row }: { row: AmazonRankKeywordView }) {
     );
   }
 
-  const depth = Math.max(
-    DEFAULT_DEPTH,
-    ...row.history.map((check) => check.organicResultsScanned),
-    ...row.history.map((check) => check.organicPosition ?? 0),
+  const positions = row.history.flatMap((check) =>
+    check.organicPosition != null ? [check.organicPosition] : [],
   );
+  const anyNotFound = positions.length < row.history.length;
+  // Only a "not found" check needs the full scanned depth and its bottom band;
+  // otherwise scale to the positions actually held, so #1 -> #3 is visible.
+  const depth = anyNotFound
+    ? Math.max(
+        DEFAULT_DEPTH,
+        ...row.history.map((check) => check.organicResultsScanned),
+        ...positions,
+      )
+    : (NICE_UPPER_BOUNDS.find((bound) => bound > Math.max(...positions)) ??
+      Math.max(...positions));
   const oldestFirst = [...row.history].reverse();
   const rawByTime = new Map<number, number | null>();
   const data = oldestFirst.map((check) => {
@@ -50,6 +70,8 @@ export function AmazonPositionTrend({ row }: { row: AmazonRankKeywordView }) {
     rawByTime.set(time, check.organicPosition);
     return { checkedAt: time, organic: check.organicPosition ?? depth };
   });
+  const times = data.map((point) => point.checkedAt);
+  const spansDays = Math.max(...times) - Math.min(...times) >= TWO_DAYS_MS;
 
   return (
     <RankTrendChart
@@ -59,10 +81,10 @@ export function AmazonPositionTrend({ row }: { row: AmazonRankKeywordView }) {
       ]}
       serpDepth={depth}
       height={180}
-      showBottomBand
+      showBottomBand={anyNotFound}
       axisLabel="Posición orgánica en Amazon (1 = la mejor)"
       betterLabel="Mejor"
-      tickFormatter={formatShortDate}
+      tickFormatter={spansDays ? formatShortDate : formatDateTime}
       renderTooltip={(label) => {
         const position = rawByTime.get(label);
         return (
@@ -159,9 +181,16 @@ export function AmazonAsinSummary({
             <div className="mb-3 min-w-0">
               <div
                 className="truncate text-sm font-medium"
-                title={group.title ?? undefined}
+                title={
+                  group.title ??
+                  "El título solo se conoce cuando el producto aparece en el top 5 de alguna de sus palabras clave."
+                }
               >
-                {group.title ?? "Producto sin título en el top 5"}
+                {group.title ?? (
+                  <span className="text-base-content/60">
+                    Título no disponible
+                  </span>
+                )}
               </div>
               <div className="font-mono text-xs text-base-content/60">
                 {group.asin} · {group.marketplace} · {group.keywords} palabra
@@ -177,7 +206,7 @@ export function AmazonAsinSummary({
                 label="Posición media"
                 value={
                   group.average != null
-                    ? `#${group.average.toFixed(1).replace(".", ",")}`
+                    ? `#${formatAverage(group.average)}`
                     : "—"
                 }
               />
@@ -202,6 +231,10 @@ export function AmazonAsinSummary({
       </div>
     </section>
   );
+}
+
+function formatAverage(value: number) {
+  return Number.isInteger(value) ? String(value) : value.toFixed(1).replace(".", ",");
 }
 
 function Stat({
