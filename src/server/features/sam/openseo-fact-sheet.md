@@ -4,7 +4,7 @@ This is the factual product reference for Sam, the PlanetaSEO onboarding agent. 
 
 ## What PlanetaSEO is
 
-PlanetaSEO is an SEO platform for keyword research, domain research, backlinks, rank tracking, site audits, Google Search Console, and Amazon research (ASIN lookup, sellers, and organic/sponsored rank tracking by keyword) — usable directly in the app or through AI-agent workflows.
+PlanetaSEO is an SEO platform for keyword research, domain research, backlinks, rank tracking, site audits, Google Search Console, and Amazon research (approximate Reverse ASIN and organic/sponsored rank tracking by keyword) — usable directly in the app or through AI-agent workflows.
 
 It is built for SEO consultants, agencies, and sellers who want useful SEO and Amazon data without a bloated enterprise suite.
 
@@ -24,11 +24,11 @@ When explaining traffic growth, Sam should frame PlanetaSEO as a tool for making
 
 ## Plan and credits
 
-**Plan Base: 39,99 €/month**, including 10.000 usage credits each billing cycle.
+**Plan Base: 39,99 €/month**, including 8.000 usage credits each billing cycle.
 
-Top-up credits can be purchased if monthly credits run out (10 € adds 10.000 credits at time of writing — Sam should confirm the current top-up rate on the Billing page rather than assume it never changes). Top-up credits roll over and do not expire; monthly included credits reset each billing cycle.
+Top-up credits can be purchased if monthly credits run out (10 € adds 5.000 credits at time of writing — Sam should confirm the current top-up rate on the Billing page rather than assume it never changes). Top-up credits roll over and do not expire; monthly included credits reset each billing cycle.
 
-PlanetaSEO uses usage credits for features that query paid data providers, especially DataForSEO (SEO data) and its Amazon endpoints (ASIN lookup, sellers, Amazon rank tracking). Credit-using workflows include keyword volume, competitor data, backlinks, rank tracking, site audits, and all Amazon research features. Projects, settings, and data that has already been fetched do not cost credits to view.
+PlanetaSEO uses usage credits for features that query paid data providers, especially DataForSEO (SEO data) and its Amazon endpoints (Reverse ASIN, Amazon rank tracking). Credit-using workflows include keyword volume, competitor data, backlinks, rank tracking, site audits, and all Amazon research features. Projects, settings, and data that has already been fetched do not cost credits to view.
 
 Running out of credits never creates unexpected bills. Credit-using features stop working until the user has credits again.
 
@@ -120,7 +120,7 @@ PlanetaSEO's app includes these practical workflows:
 - Backlink research: inspect backlinks, referring domains, target URLs, link quality signals, and competitor link profiles.
 - Rank tracking: track Google keyword positions over time.
 - Site audit: crawl pages and inspect technical page-level signals such as status codes, titles, meta descriptions, headings, indexability, image alt coverage, links, response time, and optional Lighthouse findings.
-- Amazon ASIN lookup: price, rating, stock, brand, and best-sellers-rank for a product; who else sells it.
+- Amazon Reverse ASIN (approximate): for an ASIN, proposes candidate keywords from its title and from Google searches in that country, then checks each one on Amazon to show the organic and sponsored position and badges. Google volume is shown as a reference; it is not Amazon search volume. Any keyword can be sent to Amazon rank tracking.
 - Amazon rank tracking: organic and sponsored position by keyword, per project (per client), with alerts on a big drop, a lost badge, or a new top-5 competitor, plus CSV/JSON export.
 - Saved keywords: organize keyword opportunities for content planning, tracking, or AI-agent workflows.
 - Reports: agents connected over MCP save finished HTML reports into a project, where anyone in the workspace can read, print or export them from the Reports page in the sidebar. You cannot save reports yourself. Reports use no credits, and each project holds up to 10,000.

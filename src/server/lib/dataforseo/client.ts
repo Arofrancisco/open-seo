@@ -23,7 +23,6 @@ import {
 import {
   postAmazonAsinTask,
   postAmazonProductsTask,
-  postAmazonSellersTask,
 } from "@/server/lib/dataforseo/merchant";
 import {
   fetchBacklinksHistory,
@@ -107,7 +106,6 @@ export function createDataforseoClient(customer: BillingCustomerContext) {
       // task_post is where DataForSEO charges; collection runs unmetered
       // through fetchAmazonAsinTaskResult (see index.ts).
       asinTaskPost: meter(customer, postAmazonAsinTask, "amazon"),
-      sellersTaskPost: meter(customer, postAmazonSellersTask, "amazon"),
       productsTaskPost: meter(customer, postAmazonProductsTask, "amazon"),
     },
     backlinks: {

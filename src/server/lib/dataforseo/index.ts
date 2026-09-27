@@ -36,15 +36,11 @@ export {
 export {
   fetchAmazonAsinTaskResult,
   fetchAmazonProductsRank,
-  fetchAmazonSellersTaskResult,
   type AmazonAsinResult,
   type AmazonAsinTaskOutcome,
   type AmazonKeywordRank,
   type AmazonProductsTaskOutcome,
   type AmazonTopResult,
-  type AmazonSellerOffer,
-  type AmazonSellersResult,
-  type AmazonSellersTaskOutcome,
 } from "@/server/lib/dataforseo/merchant";
 
 export type {

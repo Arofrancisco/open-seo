@@ -35,7 +35,7 @@ function postedTaskId<T extends DataforseoTaskLike & { id?: string }>(
   return { data: task.id, billing: buildTaskBilling(task) };
 }
 
-type AmazonEndpoint = "asin" | "sellers" | "products";
+type AmazonEndpoint = "asin" | "products";
 
 type AmazonTaskInput = {
   asin: string;
@@ -49,12 +49,6 @@ export function postAmazonAsinTask(
   input: AmazonTaskInput,
 ): Promise<DataforseoApiResponse<string>> {
   return postAmazonTask("asin", input);
-}
-
-export function postAmazonSellersTask(
-  input: AmazonTaskInput,
-): Promise<DataforseoApiResponse<string>> {
-  return postAmazonTask("sellers", input);
 }
 
 async function postAmazonTask(
@@ -245,105 +239,6 @@ export async function fetchAmazonAsinTaskResult(input: {
 
 const nullableString = z.string().nullable().optional();
 const nullableNumber = z.number().nullable().optional();
-
-const amazonSellerItemSchema = z
-  .object({
-    rank_absolute: nullableNumber,
-    seller_name: nullableString,
-    seller_url: nullableString,
-    ships_from: nullableString,
-    condition: nullableString,
-    price: z
-      .object({
-        current: nullableNumber,
-        regular: nullableNumber,
-        currency: nullableString,
-      })
-      .passthrough()
-      .nullable()
-      .optional(),
-    rating: z
-      .object({
-        value: nullableNumber,
-        votes_count: nullableNumber,
-        rating_max: nullableNumber,
-      })
-      .passthrough()
-      .nullable()
-      .optional(),
-    delivery_info: z
-      .object({
-        delivery_message: nullableString,
-        delivery_date_from: nullableString,
-        delivery_date_to: nullableString,
-      })
-      .passthrough()
-      .nullable()
-      .optional(),
-  })
-  .passthrough();
-
-export type AmazonSellerOffer = {
-  position: number | null;
-  sellerName: string | null;
-  sellerUrl: string | null;
-  shipsFrom: string | null;
-  condition: string | null;
-  price: number | null;
-  regularPrice: number | null;
-  currency: string | null;
-  ratingValue: number | null;
-  ratingMax: number | null;
-  ratingVotes: number | null;
-  deliveryMessage: string | null;
-};
-
-export type AmazonSellersResult = {
-  asin: string;
-  title: string | null;
-  offers: AmazonSellerOffer[];
-};
-
-export type AmazonSellersTaskOutcome = AmazonTaskOutcome<AmazonSellersResult>;
-
-export async function fetchAmazonSellersTaskResult(input: {
-  taskId: string;
-  asin: string;
-}): Promise<AmazonSellersTaskOutcome> {
-  const collected = await collectAmazonTask("sellers", input.taskId);
-  if (!collected.done) return collected.outcome;
-
-  const first = collected.task.result?.[0];
-  const rawItems = Array.isArray(first?.items) ? first.items : [];
-  // One malformed offer shouldn't hide the rest of the sellers list.
-  const offers = rawItems.flatMap((raw): AmazonSellerOffer[] => {
-    const parsed = amazonSellerItemSchema.safeParse(raw);
-    if (!parsed.success) return [];
-    const item = parsed.data;
-    return [
-      {
-        position: item.rank_absolute ?? null,
-        sellerName: item.seller_name ?? null,
-        sellerUrl: item.seller_url ?? null,
-        shipsFrom: item.ships_from ?? null,
-        condition: item.condition ?? null,
-        price: item.price?.current ?? null,
-        regularPrice: item.price?.regular ?? null,
-        currency: item.price?.currency ?? null,
-        ratingValue: item.rating?.value ?? null,
-        ratingMax: item.rating?.rating_max ?? null,
-        ratingVotes: item.rating?.votes_count ?? null,
-        deliveryMessage: item.delivery_info?.delivery_message ?? null,
-      },
-    ];
-  });
-
-  const title = isRecord(first) && typeof first.title === "string" ? first.title : null;
-  return {
-    status: "completed",
-    result: { asin: input.asin, title, offers },
-  };
-}
 
 // ---------------------------------------------------------------------------
 // Amazon search results (Products endpoint) — where an ASIN ranks for a

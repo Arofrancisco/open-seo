@@ -121,4 +121,6 @@ export const {
   telemetryState,
   amazonRankKeywords,
   amazonRankChecks,
+  amazonReverseAsinRuns,
+  amazonReverseAsinResults,
 } = schema;

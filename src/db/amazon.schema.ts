@@ -70,3 +70,59 @@ export const amazonRankChecks = sqliteTable(
     ),
   ],
 );
+
+// Reverse ASIN (approximate): one run per ASIN analysed, then one row per
+// candidate keyword searched on Amazon to see where the ASIN appears.
+
+export const amazonReverseAsinRuns = sqliteTable(
+  "amazon_reverse_asin_runs",
+  {
+    id: text("id").primaryKey(),
+    projectId: text("project_id")
+      .notNull()
+      .references(() => projects.id, { onDelete: "cascade" }),
+    asin: text("asin").notNull(),
+    marketplace: text("marketplace").notNull(),
+    // fetching_product → generating → choosing_keywords → checking → done,
+    // or not_found when the ASIN has no listing in that marketplace.
+    status: text("status").notNull(),
+    productTaskId: text("product_task_id"),
+    title: text("title"),
+    brand: text("brand"),
+    // JSON array of ReverseAsinCandidate, set once the product is read.
+    candidates: text("candidates"),
+    createdAt: text("created_at")
+      .notNull()
+      .default(sql`(strftime('%Y-%m-%dT%H:%M:%fZ','now'))`),
+  },
+  (table) => [
+    index("amazon_reverse_asin_runs_project_created_idx").on(
+      table.projectId,
+      table.createdAt,
+    ),
+  ],
+);
+
+export const amazonReverseAsinResults = sqliteTable(
+  "amazon_reverse_asin_results",
+  {
+    id: text("id").primaryKey(),
+    runId: text("run_id")
+      .notNull()
+      .references(() => amazonReverseAsinRuns.id, { onDelete: "cascade" }),
+    keyword: text("keyword").notNull(),
+    // Google monthly volume for the marketplace's country; null when unknown.
+    googleVolume: integer("google_volume"),
+    taskId: text("task_id").notNull(),
+    // Null until the Amazon search is collected.
+    checkedAt: text("checked_at"),
+    organicPosition: integer("organic_position"),
+    sponsoredPosition: integer("sponsored_position"),
+    organicResultsScanned: integer("organic_results_scanned"),
+    isAmazonChoice: integer("is_amazon_choice", { mode: "boolean" }),
+    isBestSeller: integer("is_best_seller", { mode: "boolean" }),
+  },
+  (table) => [
+    index("amazon_reverse_asin_results_run_idx").on(table.runId),
+  ],
+);

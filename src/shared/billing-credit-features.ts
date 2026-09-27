@@ -24,7 +24,7 @@ const CREDIT_FEATURE_LABELS: Record<string, string> = {
   // key — keep the label so old billing breakdowns don't render "Other".
   onboarding: "Onboarding",
   agent: "SAM Agent",
-  amazon: "Amazon ASIN Lookup",
+  amazon: "Amazon",
 };
 
 /**
