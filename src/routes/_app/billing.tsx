@@ -9,7 +9,12 @@ import { getStandardErrorMessage } from "@/client/lib/error-messages";
 import { buildCheckoutSuccessUrl } from "@/client/features/billing/checkout-url";
 import { BillingUsageChart } from "@/client/features/billing/BillingUsageChart";
 import { BillingFeatureBreakdown } from "@/client/features/billing/BillingFeatureBreakdown";
-import { parseTopUpAmount } from "@/client/features/billing/HostedBillingContentUtils";
+import {
+  parseTopUpAmount,
+  TOP_UP_MAX_EUR,
+  TOP_UP_MIN_EUR,
+  TOP_UP_STEP_EUR,
+} from "@/client/features/billing/HostedBillingContentUtils";
 import { getBillingRouteState } from "@/client/features/billing/route-state";
 import { getCustomerPlanStatus } from "@/client/features/billing/plan-detection";
 import {
@@ -252,8 +257,10 @@ function BillingPage() {
             <div>
               <span className="font-semibold">Comprar créditos</span>
               <p className="mt-1 text-sm text-base-content/60">
-                Los créditos de recarga no caducan y se usan después de los
-                mensuales.
+                2 € por cada 1.000 créditos. Mínimo {TOP_UP_MIN_EUR} € (
+                {(TOP_UP_MIN_EUR * TOPUP_CREDITS_PER_EUR).toLocaleString("es-ES")}{" "}
+                créditos). Los créditos de recarga no caducan y se usan después
+                de los mensuales.
               </p>
             </div>
 
@@ -262,9 +269,9 @@ function BillingPage() {
                 <span className="text-sm text-base-content/60">€</span>
                 <input
                   type="number"
-                  min={10}
-                  max={99}
-                  step={1}
+                  min={TOP_UP_MIN_EUR}
+                  max={TOP_UP_MAX_EUR}
+                  step={TOP_UP_STEP_EUR}
                   inputMode="numeric"
                   className="input input-bordered input-sm w-full"
                   value={topUpAmount}
@@ -273,7 +280,17 @@ function BillingPage() {
               </div>
               {topUpAmount.trim() !== "" && !isValidTopUp ? (
                 <p className="mt-1 text-xs text-error">
-                  Introduce un importe entre 10 y 99 €.
+                  Introduce un importe par entre {TOP_UP_MIN_EUR} y{" "}
+                  {TOP_UP_MAX_EUR} € (paquetes de 1.000 créditos a 2 €).
+                </p>
+              ) : isValidTopUp ? (
+                <p className="mt-1 text-xs text-base-content/60">
+                  Recibirás{" "}
+                  {(parsedTopUpAmount * TOPUP_CREDITS_PER_EUR).toLocaleString(
+                    "es-ES",
+                  )}{" "}
+                  créditos. En el pago verás {parsedTopUpAmount / TOP_UP_STEP_EUR}{" "}
+                  paquetes de 1.000 créditos.
                 </p>
               ) : null}
             </div>

@@ -5,7 +5,9 @@ describe("parseTopUpAmount", () => {
   it("accepts valid whole-dollar amounts", () => {
     expect(parseTopUpAmount("20")).toEqual({ isValid: true, parsed: 20 });
     expect(parseTopUpAmount("10")).toEqual({ isValid: true, parsed: 10 });
-    expect(parseTopUpAmount("99")).toEqual({ isValid: true, parsed: 99 });
+    expect(parseTopUpAmount("98")).toEqual({ isValid: true, parsed: 98 });
+    expect(parseTopUpAmount("11")).toEqual({ isValid: false, parsed: 20 });
+    expect(parseTopUpAmount("99")).toEqual({ isValid: false, parsed: 20 });
   });
 
   it("rejects amounts below minimum", () => {
