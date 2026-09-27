@@ -19,6 +19,7 @@ import {
   AUTUMN_SEO_DATA_BALANCE_FEATURE_ID,
   LOW_CREDITS_THRESHOLD_USD,
   AUTUMN_SEO_DATA_CREDITS_PER_USD,
+  TOPUP_CREDITS_PER_EUR,
   AUTUMN_SEO_DATA_TOP_UP_PLAN_ID,
   AUTUMN_SEO_DATA_TOPUP_BALANCE_FEATURE_ID,
   autumnSeoDataCreditsToUsd,
@@ -170,7 +171,7 @@ function BillingPage() {
               <p className="mt-2 text-xs text-amber-600">
                 Te quedan pocos créditos.{" "}
                 {isFreePlan
-                  ? "Mejora tu plan y recibe 10.000 al mes."
+                  ? "Mejora tu plan y recibe 8.000 al mes."
                   : "Compra más créditos abajo."}
               </p>
             ) : null}
@@ -200,7 +201,7 @@ function BillingPage() {
               <ul className="space-y-1.5">
                 {[
                   "Acceso a todas las funciones",
-                  "Incluye 10.000 créditos de uso cada mes",
+                  "Incluye 8.000 créditos de uso cada mes",
                 ].map((item) => (
                   <li
                     key={item}
@@ -292,7 +293,7 @@ function BillingPage() {
                         {
                           featureId: AUTUMN_SEO_DATA_TOPUP_BALANCE_FEATURE_ID,
                           quantity: Math.round(
-                            parsedTopUpAmount * AUTUMN_SEO_DATA_CREDITS_PER_USD,
+                            parsedTopUpAmount * TOPUP_CREDITS_PER_EUR,
                           ),
                         },
                       ],

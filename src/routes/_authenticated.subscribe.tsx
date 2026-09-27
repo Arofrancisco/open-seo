@@ -25,7 +25,7 @@ const PLAN_FEATURES = [
   "Keyword research, backlinks, seguimiento de posiciones y auditorías de sitio",
   "Servidor MCP y skills de agente para Claude, Cursor y ChatGPT",
   "Integración con Google Search Console",
-  "Incluye 10.000 créditos de uso cada mes",
+  "Incluye 8.000 créditos de uso cada mes",
 ];
 
 // How long the post-checkout "finalizing" screen polls Autumn before giving

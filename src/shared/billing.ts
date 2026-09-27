@@ -13,6 +13,8 @@ export const AUTUMN_MANAGED_ACCESS_FEATURE_ID = "managed_service_access";
 export const AUTUMN_SEO_DATA_BALANCE_FEATURE_ID = "usage_credits";
 export const AUTUMN_SEO_DATA_TOPUP_BALANCE_FEATURE_ID = "topup_credits";
 export const AUTUMN_SEO_DATA_CREDITS_PER_USD = 1000;
+// Must match the credit-top-up price in Autumn (2 € per 1,000 topup credits).
+export const TOPUP_CREDITS_PER_EUR = 500;
 export const SEO_DATA_COST_MARKUP = 1.28;
 export const LOW_CREDITS_THRESHOLD_USD = 0.25;
 
