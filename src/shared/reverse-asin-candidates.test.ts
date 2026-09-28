@@ -3,6 +3,7 @@ import {
   defaultSelection,
   mergeCandidates,
   planTitleKeywords,
+  withAmazonVolumes,
 } from "@/shared/reverse-asin-candidates";
 
 describe("planTitleKeywords", () => {
@@ -13,7 +14,12 @@ describe("planTitleKeywords", () => {
       brand: "Lavanix",
       labsLanguageCode: "es",
     });
-    expect(plan.seeds).toEqual(["bolsa lavado ropa", "bolsa lavado"]);
+    expect(plan.seeds).toEqual([
+      "bolsa lavado ropa",
+      "bolsa lavado",
+      "bolsas malla",
+      "lencería sujetadores",
+    ]);
     expect(plan.titlePhrases).toContain("bolsa lavado");
     expect(plan.titlePhrases).toContain("ropa delicada");
     expect(plan.titlePhrases).toContain("bolsas malla");
@@ -30,6 +36,16 @@ describe("planTitleKeywords", () => {
     expect(plan.seeds[0]).toBe("stainless steel water");
     expect(plan.titlePhrases).toContain("water bottle");
     expect(plan.titlePhrases).toContain("insulated flask");
+  });
+
+  it("adds a seed per later segment, where the generic searches usually are", () => {
+    const plan = planTitleKeywords({
+      title: "Nutrix RADIANTE Piel con Acné y Rosácea | Probióticos Astaxantina Zinc",
+      brand: "Nutrix",
+      labsLanguageCode: "es",
+    });
+    expect(plan.seeds).toContain("probióticos astaxantina");
+    expect(plan.seeds[0]).toBe("radiante piel acné");
   });
 
   it("returns a single-word seed when the title has one content word", () => {
@@ -60,13 +76,39 @@ describe("mergeCandidates", () => {
     ]);
     expect(merged[2]!.source).toBe("google");
     expect(merged[3]!.source).toBe("title");
+    expect(merged.every((c) => c.amazonVolume === null)).toBe(true);
   });
 
-  it("pre-selects Google keywords with volume and the title phrases", () => {
+  it("orders by Amazon volume, then Google volume", () => {
+    const ordered = withAmazonVolumes(
+      [
+        { keyword: "a", amazonVolume: null, googleVolume: 5000, source: "google" },
+        { keyword: "b", amazonVolume: null, googleVolume: 10, source: "google" },
+        { keyword: "c", amazonVolume: null, googleVolume: null, source: "title" },
+      ],
+      new Map([
+        ["b", 900],
+        ["c", 1200],
+      ]),
+    );
+    expect(ordered.map((c) => c.keyword)).toEqual(["c", "b", "a"]);
+    expect(ordered[0]!.amazonVolume).toBe(1200);
+  });
+
+  it("pre-selects what is searched on Amazon when volumes are known", () => {
     const selection = defaultSelection([
-      { keyword: "a", googleVolume: 10, source: "google" },
-      { keyword: "b", googleVolume: 0, source: "google" },
-      { keyword: "c", googleVolume: null, source: "title" },
+      { keyword: "a", amazonVolume: 800, googleVolume: 10, source: "google" },
+      { keyword: "b", amazonVolume: 0, googleVolume: 5000, source: "google" },
+      { keyword: "c", amazonVolume: 50, googleVolume: null, source: "title" },
+    ]);
+    expect(selection).toEqual(["a", "c"]);
+  });
+
+  it("falls back to Google volume and title phrases without Amazon volume", () => {
+    const selection = defaultSelection([
+      { keyword: "a", amazonVolume: null, googleVolume: 10, source: "google" },
+      { keyword: "b", amazonVolume: null, googleVolume: 0, source: "google" },
+      { keyword: "c", amazonVolume: null, googleVolume: null, source: "title" },
     ]);
     expect(selection).toEqual(["a", "c"]);
   });

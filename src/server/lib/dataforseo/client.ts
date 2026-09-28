@@ -32,6 +32,7 @@ import {
   fetchReferringDomains,
 } from "@/server/lib/dataforseo/backlinks";
 import {
+  fetchAmazonBulkSearchVolume,
   fetchDomainRankOverview,
   fetchKeywordIdeas,
   fetchKeywordOverview,
@@ -143,6 +144,7 @@ export function createDataforseoClient(customer: BillingCustomerContext) {
       // rank_tracking when omitted.
       keywordOverview: meter(customer, fetchKeywordOverview, "rank_tracking"),
       serpCompetitors: meter(customer, fetchSerpCompetitors),
+      amazonSearchVolume: meter(customer, fetchAmazonBulkSearchVolume, "amazon"),
     },
     lighthouse: {
       live: meter(customer, fetchLighthouseResult),

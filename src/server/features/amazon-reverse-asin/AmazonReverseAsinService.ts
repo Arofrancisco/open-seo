@@ -12,6 +12,7 @@ import {
 import {
   mergeCandidates,
   planTitleKeywords,
+  withAmazonVolumes,
   type ReverseAsinCandidate,
 } from "@/shared/reverse-asin-candidates";
 import {
@@ -21,10 +22,9 @@ import {
   type ReverseAsinStatus,
 } from "@/server/features/amazon-reverse-asin/AmazonReverseAsinRepository";
 
-// Google suggestions per seed; a second seed is only queried when the first
-// comes back thin.
-const SUGGESTIONS_LIMIT = 40;
-const ENOUGH_SUGGESTIONS = 15;
+// Google suggestions per seed. Every seed is queried: each title segment
+// brings different buyer searches, and the Amazon volume lookup then ranks them.
+const SUGGESTIONS_LIMIT = 25;
 // Amazon searches use the priority queue (~1 minute); past a day a task that
 // still can't be collected is recorded as "not found" so the run can finish.
 const PENDING_GIVE_UP_MS = 24 * 60 * 60 * 1000;
@@ -32,6 +32,7 @@ const COLLECT_BATCH = 10;
 
 export type ReverseAsinResultView = {
   keyword: string;
+  amazonVolume: number | null;
   googleVolume: number | null;
   pending: boolean;
   organicPosition: number | null;
@@ -72,6 +73,7 @@ function parseCandidates(raw: string | null): ReverseAsinCandidate[] {
 function toResultView(row: ReverseAsinResultRow): ReverseAsinResultView {
   return {
     keyword: row.keyword,
+    amazonVolume: row.amazonVolume,
     googleVolume: row.googleVolume,
     pending: row.checkedAt == null,
     organicPosition: row.organicPosition,
@@ -128,8 +130,9 @@ async function start(input: {
 }
 
 /**
- * Title phrases are free; the Google suggestions are a paid Labs call. If that
- * call fails (e.g. out of credits) the user still gets the title phrases.
+ * Title phrases are free; Google suggestions and the Amazon volume lookup are
+ * paid Labs calls. If either fails (e.g. out of credits) the user still gets
+ * the candidates gathered so far.
  */
 async function generateCandidates(
   run: ReverseAsinRunRow,
@@ -164,7 +167,6 @@ async function generateCandidates(
           });
         }
       }
-      if (google.length >= ENOUGH_SUGGESTIONS) break;
     }
   } catch (error) {
     console.warn("amazon-reverse-asin.suggestions-failed", {
@@ -173,7 +175,29 @@ async function generateCandidates(
     });
   }
 
-  return mergeCandidates({ google, titlePhrases: plan.titlePhrases });
+  const candidates = mergeCandidates({ google, titlePhrases: plan.titlePhrases });
+  if (candidates.length === 0) return candidates;
+  try {
+    const items = await dataforseo.labs.amazonSearchVolume({
+      keywords: candidates.map((candidate) => candidate.keyword),
+      locationCode: marketplace.locationCode,
+      languageCode: marketplace.labsLanguageCode,
+    });
+    const volumes = new Map(
+      items.flatMap((item) =>
+        item.keyword
+          ? [[item.keyword.toLocaleLowerCase(), item.search_volume ?? null] as const]
+          : [],
+      ),
+    );
+    return withAmazonVolumes(candidates, volumes);
+  } catch (error) {
+    console.warn("amazon-reverse-asin.amazon-volume-failed", {
+      runId: run.id,
+      error,
+    });
+    return candidates;
+  }
 }
 
 async function advanceProduct(
@@ -291,10 +315,10 @@ async function confirmKeywords(input: {
     );
   }
 
-  const volumes = new Map(
+  const byKeyword = new Map(
     parseCandidates(run.candidates).map((candidate) => [
       candidate.keyword,
-      candidate.googleVolume,
+      candidate,
     ]),
   );
   const marketplace = getAmazonMarketplace(
@@ -302,6 +326,27 @@ async function confirmKeywords(input: {
   );
   const dataforseo = createDataforseoClient(input.customer);
   const keywords = [...new Set(input.keywords)];
+
+  // Keywords typed by hand weren't in the candidate lookup: fetch their Amazon
+  // volume now. Not worth failing the run over, so errors are ignored.
+  const manual = keywords.filter((keyword) => !byKeyword.has(keyword));
+  const manualVolumes = new Map<string, number | null>();
+  if (manual.length > 0) {
+    try {
+      const items = await dataforseo.labs.amazonSearchVolume({
+        keywords: manual,
+        locationCode: marketplace.locationCode,
+        languageCode: marketplace.labsLanguageCode,
+      });
+      for (const item of items) {
+        if (item.keyword) {
+          manualVolumes.set(item.keyword.toLocaleLowerCase(), item.search_volume ?? null);
+        }
+      }
+    } catch (error) {
+      console.warn("amazon-reverse-asin.manual-volume-failed", { runId: run.id, error });
+    }
+  }
 
   let posted = 0;
   try {
@@ -317,7 +362,9 @@ async function confirmKeywords(input: {
         id: crypto.randomUUID(),
         runId: run.id,
         keyword,
-        googleVolume: volumes.get(keyword) ?? null,
+        amazonVolume:
+          byKeyword.get(keyword)?.amazonVolume ?? manualVolumes.get(keyword) ?? null,
+        googleVolume: byKeyword.get(keyword)?.googleVolume ?? null,
         taskId,
       });
       posted++;

@@ -390,3 +390,37 @@ export async function fetchSerpCompetitors(input: {
     billing: buildTaskBilling(task),
   };
 }
+
+// ---------------------------------------------------------------------------
+// Amazon search volume (DataForSEO Labs Amazon). Covers Spain, UK, Germany,
+// France, Italy, US and others; the Amazon ranked/related keyword endpoints do
+// not (US and Middle East only). Up to 1,000 keywords per request.
+// ---------------------------------------------------------------------------
+
+export interface AmazonSearchVolumeItem {
+  keyword?: string | null;
+  search_volume?: number | null;
+  [key: string]: unknown;
+}
+
+export async function fetchAmazonBulkSearchVolume(input: {
+  keywords: string[];
+  locationCode: number;
+  /** Bare language code, e.g. "es". */
+  languageCode: string;
+}): Promise<DataforseoApiResponse<AmazonSearchVolumeItem[]>> {
+  const response = await dataforseoPost<
+    DataforseoItemsTask<AmazonSearchVolumeItem>
+  >("/v3/dataforseo_labs/amazon/bulk_search_volume/live", [
+    {
+      keywords: input.keywords,
+      location_code: input.locationCode,
+      language_code: input.languageCode,
+    },
+  ]);
+  const task = assertOk(response);
+  return {
+    data: task.result?.[0]?.items ?? [],
+    billing: buildTaskBilling(task),
+  };
+}

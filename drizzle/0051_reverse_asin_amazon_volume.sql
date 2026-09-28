@@ -1,0 +1,1 @@
+ALTER TABLE `amazon_reverse_asin_results` ADD `amazon_volume` integer;

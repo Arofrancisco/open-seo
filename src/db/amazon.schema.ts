@@ -111,6 +111,8 @@ export const amazonReverseAsinResults = sqliteTable(
       .notNull()
       .references(() => amazonReverseAsinRuns.id, { onDelete: "cascade" }),
     keyword: text("keyword").notNull(),
+    // Monthly searches on Amazon for the marketplace; null when unknown.
+    amazonVolume: integer("amazon_volume"),
     // Google monthly volume for the marketplace's country; null when unknown.
     googleVolume: integer("google_volume"),
     taskId: text("task_id").notNull(),

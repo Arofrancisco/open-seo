@@ -9,9 +9,12 @@ export const MAX_REVERSE_ASIN_KEYWORDS = 50;
 export const MAX_REVERSE_ASIN_CANDIDATES = 60;
 const DEFAULT_SELECTED = 30;
 const MAX_TITLE_PHRASES = 20;
+const MAX_EXTRA_SEGMENT_SEEDS = 2;
 
 export type ReverseAsinCandidate = {
   keyword: string;
+  /** Amazon monthly searches in the marketplace; null when unknown. */
+  amazonVolume: number | null;
   /** Google monthly searches in the marketplace's country; null when unknown. */
   googleVolume: number | null;
   source: "google" | "title";
@@ -101,9 +104,15 @@ export function planTitleKeywords(input: {
   if (head.length >= 3) seeds.push(head.slice(0, 3).join(" "));
   if (head.length >= 2) seeds.push(head.slice(0, 2).join(" "));
   if (head.length === 1) seeds.push(head[0]!);
+  // Later segments usually hold the generic terms buyers search for
+  // ("probióticos astaxantina", "piel acné rosácea"), while the head can be
+  // little more than the product's own name.
+  for (const tokens of rest.slice(0, MAX_EXTRA_SEGMENT_SEEDS)) {
+    if (tokens.length >= 2) seeds.push(tokens.slice(0, 2).join(" "));
+  }
 
   return {
-    seeds,
+    seeds: [...new Set(seeds)],
     titlePhrases: [...phrases].slice(0, MAX_TITLE_PHRASES),
   };
 }
@@ -127,22 +136,46 @@ export function mergeCandidates(input: {
 
   [...input.google]
     .sort((a, b) => (b.googleVolume ?? -1) - (a.googleVolume ?? -1))
-    .forEach((item) => push({ ...item, source: "google" }));
+    .forEach((item) => push({ ...item, amazonVolume: null, source: "google" }));
   input.titlePhrases.forEach((keyword) =>
-    push({ keyword, googleVolume: null, source: "title" }),
+    push({ keyword, amazonVolume: null, googleVolume: null, source: "title" }),
   );
   return out.slice(0, MAX_REVERSE_ASIN_CANDIDATES);
 }
 
-/** Pre-selects the Google candidates with volume, then title phrases, up to 30. */
+/**
+ * Adds Amazon search volume and re-orders: most searched on Amazon first,
+ * then by Google volume. Keywords the volume lookup didn't return keep null.
+ */
+export function withAmazonVolumes(
+  candidates: readonly ReverseAsinCandidate[],
+  volumes: ReadonlyMap<string, number | null>,
+): ReverseAsinCandidate[] {
+  return candidates
+    .map((candidate) => ({
+      ...candidate,
+      amazonVolume: volumes.get(candidate.keyword) ?? candidate.amazonVolume,
+    }))
+    .sort(
+      (a, b) =>
+        (b.amazonVolume ?? -1) - (a.amazonVolume ?? -1) ||
+        (b.googleVolume ?? -1) - (a.googleVolume ?? -1),
+    );
+}
+
+/**
+ * Pre-selects what people search for on Amazon; when Amazon volume is
+ * unavailable, falls back to Google volume and then the title phrases.
+ */
 export function defaultSelection(
   candidates: readonly ReverseAsinCandidate[],
 ): string[] {
-  const withVolume = candidates.filter(
-    (candidate) => candidate.source === "google" && (candidate.googleVolume ?? 0) > 0,
-  );
-  const fromTitle = candidates.filter((candidate) => candidate.source === "title");
-  return [...withVolume.slice(0, 20), ...fromTitle]
-    .slice(0, DEFAULT_SELECTED)
-    .map((candidate) => candidate.keyword);
+  const onAmazon = candidates.filter((c) => (c.amazonVolume ?? 0) > 0);
+  const picked = onAmazon.length > 0
+    ? onAmazon
+    : [
+        ...candidates.filter((c) => c.source === "google" && (c.googleVolume ?? 0) > 0).slice(0, 20),
+        ...candidates.filter((c) => c.source === "title"),
+      ];
+  return picked.slice(0, DEFAULT_SELECTED).map((candidate) => candidate.keyword);
 }

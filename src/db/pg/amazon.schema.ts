@@ -93,6 +93,7 @@ export const amazonReverseAsinResults = pgTable(
       .notNull()
       .references(() => amazonReverseAsinRuns.id, { onDelete: "cascade" }),
     keyword: text("keyword").notNull(),
+    amazonVolume: integer("amazon_volume"),
     googleVolume: integer("google_volume"),
     taskId: text("task_id").notNull(),
     checkedAt: text("checked_at"),

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { AlertCircle, Download, Plus, ScanSearch } from "lucide-react";
+import { AlertCircle, Download, Info, Plus, ScanSearch } from "lucide-react";
 import {
   confirmReverseAsinKeywords,
   getReverseAsinRun,
@@ -121,9 +121,29 @@ export function AmazonReverseAsinPage({ projectId }: Props) {
           <p className="text-sm text-base-content/70">
             Descubre por qué búsquedas de Amazon aparece un producto y en qué
             posición. La herramienta propone palabras clave a partir del título
-            y de las búsquedas de Google del país, y comprueba cada una en
-            Amazon.
+            y de las búsquedas de Google del país, les pone su volumen de
+            búsqueda en Amazon y comprueba en Amazon la posición del producto
+            en cada una.
           </p>
+        </div>
+
+        <div className="flex items-start gap-2 rounded-lg border border-info/30 bg-info/10 p-3 text-sm">
+          <Info className="mt-0.5 size-4 shrink-0 text-info" />
+          <div className="space-y-1">
+            <p>
+              <strong>Qué datos son de Amazon:</strong> la posición orgánica y
+              patrocinada, las etiquetas y el volumen de búsqueda en Amazon. El
+              volumen de Google se muestra solo como referencia.
+            </p>
+            <p className="text-base-content/70">
+              Es un método aproximado: comprueba las palabras que propone la
+              herramienta y las que añadas tú, no todas las búsquedas por las
+              que aparece el producto. El listado completo de búsquedas de un
+              ASIN solo está disponible hoy para Amazon Estados Unidos (y
+              Oriente Medio); para España y el resto de Europa, Amazon no lo
+              publica.
+            </p>
+          </div>
         </div>
 
         <form
@@ -294,6 +314,7 @@ function CandidatePicker({
     () => [
       ...extra.map((keyword) => ({
         keyword,
+        amazonVolume: null,
         googleVolume: null,
         source: "manual" as const,
       })),
@@ -346,9 +367,9 @@ function CandidatePicker({
       <div>
         <h3 className="font-medium">Elige las palabras clave que quieres comprobar</h3>
         <p className="text-sm text-base-content/70">
-          Cada palabra se busca en Amazon para ver si aparece este producto. El
-          volumen es de Google en el país del marketplace: sirve para comparar
-          qué búsqueda pesa más, no es el volumen de Amazon.
+          Cada palabra se busca en Amazon para ver si aparece este producto.
+          Están ordenadas por búsquedas mensuales en Amazon; las que añadas a
+          mano reciben su volumen al lanzar la búsqueda.
         </p>
       </div>
 
@@ -390,7 +411,8 @@ function CandidatePicker({
             <tr>
               <th />
               <th>Palabra clave</th>
-              <th className="text-right">Volumen Google</th>
+              <th className="text-right">Volumen Amazon</th>
+              <th className="text-right text-base-content/50">Volumen Google</th>
               <th>Origen</th>
             </tr>
           </thead>
@@ -407,10 +429,11 @@ function CandidatePicker({
                   />
                 </td>
                 <td>{row.keyword}</td>
-                <td className="text-right tabular-nums">
-                  {row.googleVolume == null
-                    ? "—"
-                    : row.googleVolume.toLocaleString("es-ES")}
+                <td className="text-right font-medium tabular-nums">
+                  {formatVolume(row.amazonVolume)}
+                </td>
+                <td className="text-right text-xs tabular-nums text-base-content/50">
+                  {formatVolume(row.googleVolume)}
                 </td>
                 <td className="text-xs text-base-content/60">
                   {row.source === "google"
@@ -461,6 +484,7 @@ function sortResults(results: ReverseAsinResultView[]) {
     (a, b) =>
       rank(a) - rank(b) ||
       (a.organicPosition ?? 999) - (b.organicPosition ?? 999) ||
+      (b.amazonVolume ?? -1) - (a.amazonVolume ?? -1) ||
       (b.googleVolume ?? -1) - (a.googleVolume ?? -1),
   );
 }
@@ -527,7 +551,8 @@ function ResultsTable({
               <th>Palabra clave</th>
               <th className="text-right">Orgánica</th>
               <th className="text-right">Patrocinada</th>
-              <th className="text-right">Volumen Google</th>
+              <th className="text-right">Volumen Amazon</th>
+              <th className="text-right text-base-content/50">Volumen Google</th>
               <th>Etiquetas</th>
               <th />
             </tr>
@@ -553,10 +578,11 @@ function ResultsTable({
                 <td className="text-right tabular-nums">
                   {row.sponsoredPosition != null ? `#${row.sponsoredPosition}` : "—"}
                 </td>
-                <td className="text-right tabular-nums">
-                  {row.googleVolume == null
-                    ? "—"
-                    : row.googleVolume.toLocaleString("es-ES")}
+                <td className="text-right font-medium tabular-nums">
+                  {formatVolume(row.amazonVolume)}
+                </td>
+                <td className="text-right text-xs tabular-nums text-base-content/50">
+                  {formatVolume(row.googleVolume)}
                 </td>
                 <td className="space-x-1 text-xs">
                   {row.isAmazonChoice ? (
@@ -585,6 +611,10 @@ function ResultsTable({
   );
 }
 
+function formatVolume(value: number | null) {
+  return value == null ? "—" : value.toLocaleString("es-ES");
+}
+
 function csvCell(value: string | number | boolean | null | undefined): string {
   if (value == null) return "";
   const text = typeof value === "boolean" ? (value ? "sí" : "no") : String(value);
@@ -602,6 +632,7 @@ function buildReverseAsinCsv(
     "posicion_organica",
     "posicion_patrocinada",
     "resultados_analizados",
+    "volumen_amazon",
     "volumen_google",
     "amazons_choice",
     "mas_vendido",
@@ -615,6 +646,7 @@ function buildReverseAsinCsv(
       row.organicPosition,
       row.sponsoredPosition,
       row.organicResultsScanned,
+      row.amazonVolume,
       row.googleVolume,
       row.isAmazonChoice,
       row.isBestSeller,
