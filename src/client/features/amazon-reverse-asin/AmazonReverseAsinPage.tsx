@@ -31,9 +31,9 @@ import {
 type Props = { projectId: string };
 
 const ASIN_RE = /^[A-Z0-9]{10}$/;
-// DataForSEO Merchant API, Amazon products search, standard queue (verified
-// 24/09/2026). Only used for the estimate shown before launching.
-const AMAZON_SEARCH_COST_USD = 0.0015;
+// DataForSEO Merchant API, Amazon products search, priority queue (verified
+// 28/09/2026). Only used for the estimate shown before launching.
+const AMAZON_SEARCH_COST_USD = 0.003;
 const ACTIVE_STATUSES = new Set(["fetching_product", "generating", "checking"]);
 
 const runsKey = (projectId: string) => ["amazonReverseAsinRuns", projectId];
@@ -255,7 +255,7 @@ function RunPanel({
       </div>
 
       {run.status === "fetching_product" || run.status === "generating" ? (
-        <LoadingCard text="Leyendo la ficha y preparando palabras clave… suele tardar menos de un minuto." />
+        <LoadingCard text="Leyendo la ficha y preparando palabras clave… suele tardar uno o dos minutos." />
       ) : null}
       {run.status === "not_found" ? (
         <InfoCard text="No se encontró ese ASIN en este marketplace." />
@@ -498,8 +498,8 @@ function ResultsTable({
           {pending > 0 ? (
             <span className="text-base-content/60">
               {" "}
-              · {pending} en curso (Amazon puede tardar hasta 45 minutos; puedes
-              cerrar la página)
+              · {pending} en curso (suele tardar un par de minutos; puedes cerrar
+              la página)
             </span>
           ) : null}
         </div>

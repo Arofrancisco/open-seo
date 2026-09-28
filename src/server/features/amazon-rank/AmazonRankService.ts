@@ -136,6 +136,7 @@ async function listKeywordViews(
 async function postCheck(
   keyword: AmazonRankKeywordRow,
   customer: BillingCustomerContext,
+  priority: "normal" | "high",
 ) {
   const marketplace = getAmazonMarketplace(
     keyword.marketplace as AmazonMarketplaceCode,
@@ -147,6 +148,7 @@ async function postCheck(
     locationCode: marketplace.locationCode,
     languageCode: marketplace.languageCode,
     seDomain: marketplace.seDomain,
+    priority,
   });
   await AmazonRankRepository.setPending(keyword.id, taskId);
 }
@@ -161,7 +163,8 @@ async function startCheck(
   // A check already in flight will land on its own; posting again would pay
   // twice for the same data.
   if (keyword.pendingTaskId) return;
-  await postCheck(keyword, customer);
+  // A single check is one the user is watching: use the fast queue.
+  await postCheck(keyword, customer, "high");
 }
 
 /** Posts a check for every idle keyword; stops at the first failure (e.g. out of credits). */
@@ -177,7 +180,7 @@ async function startAllChecks(
       skipped++;
       continue;
     }
-    await postCheck(keyword, customer);
+    await postCheck(keyword, customer, "normal");
     started++;
   }
   return { started, skipped };

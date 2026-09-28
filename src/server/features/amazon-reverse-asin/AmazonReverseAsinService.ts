@@ -25,7 +25,7 @@ import {
 // comes back thin.
 const SUGGESTIONS_LIMIT = 40;
 const ENOUGH_SUGGESTIONS = 15;
-// Amazon's standard queue finishes within 45 minutes; past a day a task that
+// Amazon searches use the priority queue (~1 minute); past a day a task that
 // still can't be collected is recorded as "not found" so the run can finish.
 const PENDING_GIVE_UP_MS = 24 * 60 * 60 * 1000;
 const COLLECT_BATCH = 10;
@@ -113,6 +113,7 @@ async function start(input: {
     locationCode: marketplace.locationCode,
     languageCode: marketplace.languageCode,
     seDomain: marketplace.seDomain,
+    priority: "high",
   });
   const runId = crypto.randomUUID();
   await Repo.createRun({
@@ -310,6 +311,7 @@ async function confirmKeywords(input: {
         locationCode: marketplace.locationCode,
         languageCode: marketplace.languageCode,
         seDomain: marketplace.seDomain,
+        priority: "high",
       });
       await Repo.insertResult({
         id: crypto.randomUUID(),

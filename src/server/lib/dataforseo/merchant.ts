@@ -43,7 +43,16 @@ type AmazonTaskInput = {
   /** Locale-style, e.g. "es_ES" — the Merchant API rejects bare "es". */
   languageCode: string;
   seDomain: string;
+  /**
+   * "high" = DataForSEO priority queue: ~1 minute at twice the price. For
+   * checks the user is waiting on; bulk and background checks stay "normal"
+   * (up to 45 minutes).
+   */
+  priority?: "normal" | "high";
 };
+
+const priorityParam = (priority: AmazonTaskInput["priority"]) =>
+  priority === "high" ? { priority: 2 } : {};
 
 export function postAmazonAsinTask(
   input: AmazonTaskInput,
@@ -64,6 +73,7 @@ async function postAmazonTask(
           location_code: input.locationCode,
           language_code: input.languageCode,
           se_domain: input.seDomain,
+          ...priorityParam(input.priority),
         },
       ],
       NO_RETRY,
@@ -259,6 +269,7 @@ export function postAmazonProductsTask(
         language_code: input.languageCode,
         se_domain: input.seDomain,
         depth: AMAZON_SERP_DEPTH,
+        ...priorityParam(input.priority),
       },
     ],
     NO_RETRY,
