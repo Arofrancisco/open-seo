@@ -10,8 +10,11 @@ import {
   type AmazonMarketplaceCode,
 } from "@/shared/amazon-marketplaces";
 import {
+  MAX_REVERSE_ASIN_KEYWORDS,
   mergeCandidates,
   planTitleKeywords,
+  stripAccents,
+  volumeLookupKeywords,
   withAmazonVolumes,
   type ReverseAsinCandidate,
 } from "@/shared/reverse-asin-candidates";
@@ -179,7 +182,7 @@ async function generateCandidates(
   if (candidates.length === 0) return candidates;
   try {
     const items = await dataforseo.labs.amazonSearchVolume({
-      keywords: candidates.map((candidate) => candidate.keyword),
+      keywords: volumeLookupKeywords(candidates.map((candidate) => candidate.keyword)),
       locationCode: marketplace.locationCode,
       languageCode: marketplace.labsLanguageCode,
     });
@@ -190,7 +193,7 @@ async function generateCandidates(
           : [],
       ),
     );
-    return withAmazonVolumes(candidates, volumes);
+    return withAmazonVolumes(candidates, volumes, plan.headWords);
   } catch (error) {
     console.warn("amazon-reverse-asin.amazon-volume-failed", {
       runId: run.id,
@@ -334,7 +337,7 @@ async function confirmKeywords(input: {
   if (manual.length > 0) {
     try {
       const items = await dataforseo.labs.amazonSearchVolume({
-        keywords: manual,
+        keywords: volumeLookupKeywords(manual),
         locationCode: marketplace.locationCode,
         languageCode: marketplace.labsLanguageCode,
       });
@@ -363,7 +366,10 @@ async function confirmKeywords(input: {
         runId: run.id,
         keyword,
         amazonVolume:
-          byKeyword.get(keyword)?.amazonVolume ?? manualVolumes.get(keyword) ?? null,
+          byKeyword.get(keyword)?.amazonVolume ??
+          manualVolumes.get(keyword) ??
+          manualVolumes.get(stripAccents(keyword)) ??
+          null,
         googleVolume: byKeyword.get(keyword)?.googleVolume ?? null,
         taskId,
       });
@@ -377,6 +383,72 @@ async function confirmKeywords(input: {
     return { posted, stoppedEarly: true };
   }
   return { posted, stoppedEarly: false };
+}
+
+/** Checks one more keyword on a launched run, e.g. one the user thought of later. */
+async function addKeyword(input: {
+  projectId: string;
+  runId: string;
+  keyword: string;
+  customer: BillingCustomerContext;
+}): Promise<{ added: boolean }> {
+  const run = await Repo.getRun(input.projectId, input.runId);
+  if (!run) throw new AppError("NOT_FOUND", "Análisis no encontrado");
+  if (run.status !== "checking" && run.status !== "done") {
+    throw new AppError(
+      "VALIDATION_ERROR",
+      "Lanza primero la búsqueda de las palabras elegidas.",
+    );
+  }
+  const results = await Repo.listResults(run.id);
+  if (results.some((row) => row.keyword === input.keyword)) return { added: false };
+  if (results.length >= MAX_REVERSE_ASIN_KEYWORDS) {
+    throw new AppError(
+      "VALIDATION_ERROR",
+      `Máximo ${MAX_REVERSE_ASIN_KEYWORDS} palabras clave por análisis`,
+    );
+  }
+
+  const marketplace = getAmazonMarketplace(
+    run.marketplace as AmazonMarketplaceCode,
+  );
+  const dataforseo = createDataforseoClient(input.customer);
+  let amazonVolume: number | null = null;
+  try {
+    const items = await dataforseo.labs.amazonSearchVolume({
+      keywords: volumeLookupKeywords([input.keyword]),
+      locationCode: marketplace.locationCode,
+      languageCode: marketplace.labsLanguageCode,
+    });
+    const volumes = new Map(
+      items.flatMap((item) =>
+        item.keyword ? [[item.keyword.toLocaleLowerCase(), item.search_volume ?? null] as const] : [],
+      ),
+    );
+    amazonVolume =
+      volumes.get(input.keyword) ?? volumes.get(stripAccents(input.keyword)) ?? null;
+  } catch (error) {
+    console.warn("amazon-reverse-asin.add-volume-failed", { runId: run.id, error });
+  }
+
+  const taskId = await dataforseo.merchant.productsTaskPost({
+    keyword: input.keyword,
+    locationCode: marketplace.locationCode,
+    languageCode: marketplace.languageCode,
+    seDomain: marketplace.seDomain,
+    priority: "high",
+  });
+  await Repo.insertResult({
+    id: crypto.randomUUID(),
+    runId: run.id,
+    keyword: input.keyword,
+    amazonVolume,
+    googleVolume: null,
+    taskId,
+  });
+  // A finished run goes back to "checking" so the page polls for this result.
+  await Repo.transition(run.id, "done", "checking");
+  return { added: true };
 }
 
 async function listRuns(projectId: string): Promise<ReverseAsinRunSummary[]> {
@@ -395,5 +467,6 @@ export const AmazonReverseAsinService = {
   start,
   getView,
   confirmKeywords,
+  addKeyword,
   listRuns,
 } as const;

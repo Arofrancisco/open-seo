@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { AlertCircle, Download, Info, Plus, ScanSearch } from "lucide-react";
 import {
+  addReverseAsinKeyword,
   confirmReverseAsinKeywords,
   getReverseAsinRun,
   listReverseAsinRuns,
@@ -10,7 +11,10 @@ import {
   type ReverseAsinResultView,
   type ReverseAsinRunView,
 } from "@/serverFunctions/amazonReverseAsin";
-import { addAmazonRankKeyword } from "@/serverFunctions/amazonRank";
+import {
+  addAmazonRankKeyword,
+  listAmazonRankKeywords,
+} from "@/serverFunctions/amazonRank";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
 import { downloadFile } from "@/client/features/amazon-rank/amazonRankExport";
 import {
@@ -430,7 +434,7 @@ function CandidatePicker({
                 </td>
                 <td>{row.keyword}</td>
                 <td className="text-right font-medium tabular-nums">
-                  {formatVolume(row.amazonVolume)}
+                  {formatAmazonVolume(row.amazonVolume, row.source !== "manual")}
                 </td>
                 <td className="text-right text-xs tabular-nums text-base-content/50">
                   {formatVolume(row.googleVolume)}
@@ -496,21 +500,47 @@ function ResultsTable({
   projectId: string;
   run: ReverseAsinRunView;
 }) {
+  const queryClient = useQueryClient();
   const rows = useMemo(() => sortResults(run.results), [run.results]);
   const pending = rows.filter((row) => row.pending).length;
   const found = rows.filter((row) => row.organicPosition != null).length;
+  const [extraKeyword, setExtraKeyword] = useState("");
+
+  // Same query key as the Amazon Rank Tracking page, so both stay in sync.
+  const rankKey = ["amazonRankKeywords", projectId];
+  const tracked = useQuery({
+    queryKey: rankKey,
+    queryFn: () => listAmazonRankKeywords({ data: { projectId } }),
+  });
+  const trackedKeywords = new Set(
+    (tracked.data ?? [])
+      .filter((item) => item.asin === run.asin && item.marketplace === run.marketplace)
+      .map((item) => item.keyword),
+  );
 
   const track = useMutation({
     mutationFn: (keyword: string) =>
       addAmazonRankKeyword({
         data: { projectId, asin: run.asin, keyword, marketplace: run.marketplace },
       }),
-    onSuccess: ({ added }) =>
-      added
-        ? toast.success("Añadida al Amazon Rank Tracking")
-        : toast.info("Esa palabra clave ya estaba en el Rank Tracking"),
+    onSuccess: ({ added }) => {
+      void queryClient.invalidateQueries({ queryKey: rankKey });
+      if (added) toast.success("Añadida al Amazon Rank Tracking");
+    },
     onError: (error) =>
       toast.error(getStandardErrorMessage(error, "No se pudo añadir")),
+  });
+
+  const addExtra = useMutation({
+    mutationFn: (keyword: string) =>
+      addReverseAsinKeyword({ data: { projectId, runId: run.id, keyword } }),
+    onSuccess: ({ added }) => {
+      if (!added) toast.info("Esa palabra ya está en este análisis");
+      setExtraKeyword("");
+      void queryClient.invalidateQueries({ queryKey: runKey(projectId, run.id) });
+    },
+    onError: (error) =>
+      toast.error(getStandardErrorMessage(error, "No se pudo comprobar la palabra")),
   });
 
   const exportCsv = () =>
@@ -543,6 +573,32 @@ function ResultsTable({
           Exportar CSV
         </button>
       </div>
+
+      <form
+        className="flex gap-2"
+        onSubmit={(event) => {
+          event.preventDefault();
+          const keyword = extraKeyword.trim().toLocaleLowerCase();
+          if (keyword) addExtra.mutate(keyword);
+        }}
+      >
+        <input
+          type="text"
+          className="input input-bordered input-sm flex-1"
+          placeholder="Comprobar otra palabra clave en Amazon"
+          value={extraKeyword}
+          maxLength={200}
+          onChange={(event) => setExtraKeyword(event.target.value)}
+        />
+        <button
+          type="submit"
+          className="btn btn-sm gap-1"
+          disabled={addExtra.isPending || extraKeyword.trim() === ""}
+        >
+          <Plus className="size-4" />
+          {addExtra.isPending ? "Lanzando…" : "Comprobar"}
+        </button>
+      </form>
 
       <div className="overflow-auto rounded-lg border border-base-300">
         <table className="table table-sm">
@@ -579,7 +635,7 @@ function ResultsTable({
                   {row.sponsoredPosition != null ? `#${row.sponsoredPosition}` : "—"}
                 </td>
                 <td className="text-right font-medium tabular-nums">
-                  {formatVolume(row.amazonVolume)}
+                  {formatAmazonVolume(row.amazonVolume, !row.pending)}
                 </td>
                 <td className="text-right text-xs tabular-nums text-base-content/50">
                   {formatVolume(row.googleVolume)}
@@ -593,14 +649,18 @@ function ResultsTable({
                   ) : null}
                 </td>
                 <td className="text-right">
-                  <button
-                    type="button"
-                    className="btn btn-ghost btn-xs"
-                    disabled={track.isPending}
-                    onClick={() => track.mutate(row.keyword)}
-                  >
-                    Seguir
-                  </button>
+                  {trackedKeywords.has(row.keyword) ? (
+                    <span className="text-xs text-success">✓ Siguiendo</span>
+                  ) : (
+                    <button
+                      type="button"
+                      className="btn btn-ghost btn-xs"
+                      disabled={track.isPending}
+                      onClick={() => track.mutate(row.keyword)}
+                    >
+                      Seguir
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}
@@ -613,6 +673,20 @@ function ResultsTable({
 
 function formatVolume(value: number | null) {
   return value == null ? "—" : value.toLocaleString("es-ES");
+}
+
+/** Amazon only has volume for part of the searches; say so instead of a dash. */
+function formatAmazonVolume(value: number | null, looked: boolean) {
+  if (value != null) return value.toLocaleString("es-ES");
+  if (!looked) return "—";
+  return (
+    <span
+      className="text-xs font-normal text-base-content/50"
+      title="Amazon no tiene datos de volumen para esta búsqueda"
+    >
+      sin datos
+    </span>
+  );
 }
 
 function csvCell(value: string | number | boolean | null | undefined): string {

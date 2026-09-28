@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireProjectContext } from "@/serverFunctions/middleware";
 import {
+  addReverseAsinKeywordSchema,
   confirmReverseAsinKeywordsSchema,
   listReverseAsinRunsSchema,
   reverseAsinRunRefSchema,
@@ -52,6 +53,18 @@ export const confirmReverseAsinKeywords = createServerFn({ method: "POST" })
       projectId: context.projectId,
       runId: data.runId,
       keywords: data.keywords,
+      customer: context,
+    }),
+  );
+
+export const addReverseAsinKeyword = createServerFn({ method: "POST" })
+  .middleware(requireProjectContext)
+  .validator(addReverseAsinKeywordSchema)
+  .handler(({ data, context }) =>
+    AmazonReverseAsinService.addKeyword({
+      projectId: context.projectId,
+      runId: data.runId,
+      keyword: data.keyword,
       customer: context,
     }),
   );

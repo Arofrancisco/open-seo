@@ -8,7 +8,9 @@
 export const MAX_REVERSE_ASIN_KEYWORDS = 50;
 export const MAX_REVERSE_ASIN_CANDIDATES = 60;
 const DEFAULT_SELECTED = 30;
-const MAX_TITLE_PHRASES = 20;
+const MAX_TITLE_PHRASES = 32;
+const MAX_SINGLE_TERMS = 12;
+const MIN_SINGLE_TERM_LENGTH = 4;
 const MAX_EXTRA_SEGMENT_SEEDS = 2;
 
 export type ReverseAsinCandidate = {
@@ -63,9 +65,16 @@ function ngrams(tokens: readonly string[], size: number): string[] {
 export type TitleKeywordPlan = {
   /** Seeds for the Google keyword-suggestions lookup, most specific first. */
   seeds: string[];
-  /** Phrases taken straight from the title, in title order. */
+  /** Phrases and single terms taken straight from the title. */
   titlePhrases: string[];
+  /** Content words of the first title segment (the product type), accent-free. */
+  headWords: string[];
 };
+
+/** "Probióticos" → "probioticos": Amazon shoppers often type without accents. */
+export function stripAccents(text: string): string {
+  return text.normalize("NFD").replace(/\p{Diacritic}/gu, "");
+}
 
 /**
  * Splits the title into segments (Amazon titles are "Brand Product Type, Feature,
@@ -97,6 +106,12 @@ export function planTitleKeywords(input: {
   if (input.brand && head.length >= 2) {
     phrases.add(`${input.brand.toLocaleLowerCase()} ${head.slice(0, 2).join(" ")}`);
   }
+  // Single terms ("probióticos", "astaxantina"): Amazon volume data mostly
+  // covers short, frequent searches, not long phrases.
+  const singles = new Set(
+    segments.flat().filter((word) => word.length >= MIN_SINGLE_TERM_LENGTH),
+  );
+  const singleTerms = [...singles].slice(0, MAX_SINGLE_TERMS);
 
   // Most specific first: a two-word seed like "stainless steel" pulls in
   // unrelated high-volume searches, so it is only a fallback.
@@ -113,7 +128,11 @@ export function planTitleKeywords(input: {
 
   return {
     seeds: [...new Set(seeds)],
-    titlePhrases: [...phrases].slice(0, MAX_TITLE_PHRASES),
+    titlePhrases: [...singleTerms, ...[...phrases].filter((p) => !singles.has(p))].slice(
+      0,
+      MAX_TITLE_PHRASES,
+    ),
+    headWords: head.map(stripAccents),
   };
 }
 
@@ -145,22 +164,50 @@ export function mergeCandidates(input: {
 
 /**
  * Adds Amazon search volume and re-orders: most searched on Amazon first,
- * then by Google volume. Keywords the volume lookup didn't return keep null.
+ * then by Google volume.
+ *
+ * - `volumes` may hold both the keyword and its accent-free form; when only
+ *   the accent-free form has data, the candidate switches to that spelling.
+ * - Google suggestions with no Amazon searches that share no word with the
+ *   product type (e.g. "limonada con menta y jengibre" for a digestion
+ *   supplement) are dropped as unrelated.
  */
 export function withAmazonVolumes(
   candidates: readonly ReverseAsinCandidate[],
   volumes: ReadonlyMap<string, number | null>,
+  headWords: readonly string[] = [],
 ): ReverseAsinCandidate[] {
+  const head = new Set(headWords);
+  const seen = new Set<string>();
   return candidates
-    .map((candidate) => ({
-      ...candidate,
-      amazonVolume: volumes.get(candidate.keyword) ?? candidate.amazonVolume,
-    }))
+    .map((candidate) => {
+      const own = volumes.get(candidate.keyword) ?? null;
+      const plain = stripAccents(candidate.keyword);
+      const plainVolume = plain === candidate.keyword ? null : (volumes.get(plain) ?? null);
+      if (own == null && plainVolume != null) {
+        return { ...candidate, keyword: plain, amazonVolume: plainVolume };
+      }
+      return { ...candidate, amazonVolume: own ?? candidate.amazonVolume };
+    })
+    .filter((candidate) => {
+      if (seen.has(candidate.keyword)) return false;
+      seen.add(candidate.keyword);
+      if (candidate.source !== "google" || (candidate.amazonVolume ?? 0) > 0) return true;
+      if (head.size === 0) return true;
+      return stripAccents(candidate.keyword)
+        .split(/\s+/)
+        .some((word) => head.has(word));
+    })
     .sort(
       (a, b) =>
         (b.amazonVolume ?? -1) - (a.amazonVolume ?? -1) ||
         (b.googleVolume ?? -1) - (a.googleVolume ?? -1),
     );
+}
+
+/** Keywords to send to the Amazon volume lookup: each one plus its accent-free form. */
+export function volumeLookupKeywords(keywords: readonly string[]): string[] {
+  return [...new Set(keywords.flatMap((keyword) => [keyword, stripAccents(keyword)]))];
 }
 
 /**

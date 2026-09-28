@@ -40,3 +40,12 @@ export const confirmReverseAsinKeywordsSchema = reverseAsinRunRefSchema.extend({
       `Máximo ${MAX_REVERSE_ASIN_KEYWORDS} palabras clave por análisis`,
     ),
 });
+
+export const addReverseAsinKeywordSchema = reverseAsinRunRefSchema.extend({
+  keyword: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .min(1, "Introduce una palabra clave")
+    .max(200, "La palabra clave es demasiado larga"),
+});

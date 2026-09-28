@@ -3,6 +3,8 @@ import {
   defaultSelection,
   mergeCandidates,
   planTitleKeywords,
+  stripAccents,
+  volumeLookupKeywords,
   withAmazonVolumes,
 } from "@/shared/reverse-asin-candidates";
 
@@ -113,3 +115,52 @@ describe("mergeCandidates", () => {
     expect(selection).toEqual(["a", "c"]);
   });
 });
+
+describe("Amazon volume coverage", () => {
+  it("adds single title terms, where Amazon volume data usually exists", () => {
+    const plan = planTitleKeywords({
+      title: "Nutrix RADIANTE Piel con Acné y Rosácea | Probióticos Astaxantina Zinc",
+      brand: "Nutrix",
+      labsLanguageCode: "es",
+    });
+    expect(plan.titlePhrases).toContain("probióticos");
+    expect(plan.titlePhrases).toContain("astaxantina");
+    expect(plan.titlePhrases).toContain("zinc");
+    expect(plan.headWords).toEqual(["radiante", "piel", "acne", "rosacea"]);
+  });
+
+  it("looks up each keyword with and without accents", () => {
+    expect(stripAccents("probióticos rosácea")).toBe("probioticos rosacea");
+    expect(volumeLookupKeywords(["colágeno", "zinc"])).toEqual(["colágeno", "colageno", "zinc"]);
+  });
+
+  it("switches to the accent-free spelling when only that one has Amazon data", () => {
+    const [first] = withAmazonVolumes(
+      [{ keyword: "colágeno", amazonVolume: null, googleVolume: null, source: "title" }],
+      new Map([
+        ["colágeno", null],
+        ["colageno", 3964],
+      ]),
+    );
+    expect(first).toMatchObject({ keyword: "colageno", amazonVolume: 3964 });
+  });
+
+  it("drops unrelated Google suggestions without Amazon searches", () => {
+    const kept = withAmazonVolumes(
+      [
+        { keyword: "limonada con menta y jengibre", amazonVolume: null, googleVolume: 50, source: "google" },
+        { keyword: "pastillas gases", amazonVolume: null, googleVolume: 260, source: "google" },
+        { keyword: "jengibre en polvo", amazonVolume: 900, googleVolume: 10, source: "google" },
+        { keyword: "menta jengibre", amazonVolume: null, googleVolume: null, source: "title" },
+      ],
+      new Map(),
+      ["deshinchada", "hinchazon", "gases", "digestion"],
+    );
+    expect(kept.map((c) => c.keyword)).toEqual([
+      "jengibre en polvo",
+      "pastillas gases",
+      "menta jengibre",
+    ]);
+  });
+});
+
