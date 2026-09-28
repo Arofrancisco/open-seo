@@ -73,7 +73,7 @@ const projectNavItems = [
   },
   {
     to: "/p/$projectId/amazon-reverse-asin" as const,
-    label: "Amazon Reverse ASIN",
+    label: "Amazon Reverse ASIN (beta)",
     icon: ScanSearch,
   },
   {

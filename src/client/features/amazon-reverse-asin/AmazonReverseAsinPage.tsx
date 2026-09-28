@@ -121,6 +121,7 @@ export function AmazonReverseAsinPage({ projectId }: Props) {
           <h1 className="flex items-center gap-2 text-2xl font-semibold">
             <ScanSearch className="size-6" />
             Reverse ASIN
+            <span className="badge badge-sm badge-outline">Beta</span>
           </h1>
           <p className="text-sm text-base-content/70">
             Descubre por qué búsquedas de Amazon aparece un producto y en qué
