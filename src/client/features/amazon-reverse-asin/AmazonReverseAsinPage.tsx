@@ -76,6 +76,12 @@ export function AmazonReverseAsinPage({ projectId }: Props) {
         : false,
   });
 
+  // Open the most recent analysis on arrival so the page isn't blank.
+  const latestRunId = runs.data?.[0]?.id;
+  useEffect(() => {
+    if (runId == null && latestRunId) setRunId(latestRunId);
+  }, [runId, latestRunId]);
+
   const status = run.data?.status;
   useEffect(() => {
     if (status) void queryClient.invalidateQueries({ queryKey: runsKey(projectId) });
