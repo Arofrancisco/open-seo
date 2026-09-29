@@ -595,7 +595,12 @@ function KeywordDetail({
   );
 }
 
-function alertText(alert: AmazonRankAlert): string {
+// Amazon titles run to 150+ characters and would stretch the table sideways.
+function shorten(text: string, max: number): string {
+  return text.length > max ? `${text.slice(0, max).trimEnd()}…` : text;
+}
+
+function alertText(alert: AmazonRankAlert, maxTitle = 40): string {
   switch (alert.type) {
     case "position_drop":
       return `Cayó de #${alert.from} a #${alert.to}`;
@@ -606,7 +611,7 @@ function alertText(alert: AmazonRankAlert): string {
     case "lost_best_seller":
       return "Perdió la etiqueta de Más vendido";
     case "new_competitor":
-      return `Nuevo competidor en el top 5: ${alert.title ?? alert.asin}`;
+      return `Nuevo competidor en el top 5: ${shorten(alert.title ?? alert.asin, maxTitle)}`;
   }
 }
 
@@ -614,12 +619,16 @@ function AlertsBadge({ alerts }: { alerts: AmazonRankAlert[] }) {
   if (alerts.length === 0) return <span className="text-base-content/30">—</span>;
   return (
     <div
-      className="tooltip tooltip-left"
-      data-tip={alerts.map(alertText).join(" · ")}
+      className="tooltip tooltip-left max-w-full"
+      data-tip={alerts
+        .map((alert) => alertText(alert, Infinity))
+        .join(" · ")}
     >
-      <span className="badge badge-error gap-1 whitespace-nowrap">
-        <TriangleAlert className="size-3" />
-        {alerts.length === 1 ? alertText(alerts[0]) : `${alerts.length} avisos`}
+      <span className="badge badge-error max-w-72 gap-1 whitespace-nowrap">
+        <TriangleAlert className="size-3 shrink-0" />
+        <span className="truncate">
+          {alerts.length === 1 ? alertText(alerts[0]) : `${alerts.length} avisos`}
+        </span>
       </span>
     </div>
   );
