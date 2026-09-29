@@ -44,7 +44,9 @@ export function AiVisibilityPage({ projectId }: Props) {
     mutationFn: (questionIds: string[]) =>
       launchAiVisibility({ data: { projectId, questionIds } }),
     onSuccess: (result) => {
-      if (result.stoppedEarly) {
+      if (result.problem) {
+        toast.error(result.problem);
+      } else if (result.stoppedEarly) {
         toast.warning(
           "No se pudieron lanzar todas las preguntas (¿sin créditos?). Las ya lanzadas se conservan.",
         );
@@ -59,6 +61,7 @@ export function AiVisibilityPage({ projectId }: Props) {
 
   const data = overview.data;
   const idle = data?.questions.filter((q) => (q.latest?.pending ?? 0) === 0) ?? [];
+  const hasBrand = (data?.brandTerms.length ?? 0) > 0;
 
   return (
     <div className="px-4 py-4 pb-24 overflow-auto md:px-6 md:py-6 md:pb-8">
@@ -107,7 +110,22 @@ export function AiVisibilityPage({ projectId }: Props) {
               terms={data.brandTerms}
               onSaved={refresh}
             />
+            {!hasBrand ? (
+              <p className="rounded-lg border border-warning/40 bg-warning/10 p-3 text-sm">
+                Primero escribe el nombre de tu marca y pulsa <strong>Guardar</strong>.
+                Sin él no podemos saber si ChatGPT te menciona.
+              </p>
+            ) : null}
             <QuestionForm projectId={projectId} onAdded={refresh} />
+            <p className="text-xs text-base-content/60">
+              <strong>¿Cuántas preguntas?</strong> Empieza con 5 a 8, cada una distinta:
+              la búsqueda genérica («delantal de rizo»), una con la necesidad («para
+              secar manos y platos»), una con un atributo («de calidad», «envío
+              rápido») y una comparativa. Cada pregunta cuesta unos{" "}
+              {estimateCredits(data.runsPerQuestion)} créditos por comprobación; con 8
+              preguntas, unos {estimateCredits(8 * data.runsPerQuestion)} créditos.
+              Máximo {data.maxQuestions}.
+            </p>
 
             {data.questions.length > 0 ? (
               <div className="flex flex-wrap items-center justify-between gap-2">
@@ -117,7 +135,7 @@ export function AiVisibilityPage({ projectId }: Props) {
                 <button
                   type="button"
                   className="btn btn-primary btn-sm"
-                  disabled={launch.isPending || idle.length === 0}
+                  disabled={launch.isPending || idle.length === 0 || !hasBrand}
                   onClick={() => launch.mutate(idle.map((q) => q.id))}
                 >
                   <Play className="size-4" />
@@ -138,7 +156,7 @@ export function AiVisibilityPage({ projectId }: Props) {
                 projectId={projectId}
                 question={question}
                 runs={data.runsPerQuestion}
-                busy={launch.isPending}
+                busy={launch.isPending || !hasBrand}
                 onLaunch={() => launch.mutate([question.id])}
                 onChanged={refresh}
               />
@@ -227,7 +245,11 @@ function QuestionForm({
   const add = useMutation({
     mutationFn: () =>
       addAiVisibilityQuestion({ data: { projectId, question, marketplace } }),
-    onSuccess: () => {
+    onSuccess: (result) => {
+      if (result.problem) {
+        toast.error(result.problem);
+        return;
+      }
       setQuestion("");
       void onAdded();
     },

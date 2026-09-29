@@ -3,7 +3,6 @@ import {
   createDataforseoClient,
   fetchLlmScraperTaskResult,
 } from "@/server/lib/dataforseo";
-import { AppError } from "@/server/lib/errors";
 import { getAmazonMarketplace } from "@/shared/amazon-marketplaces";
 import {
   analyzeAnswer,
@@ -283,13 +282,12 @@ async function addQuestion(input: {
   projectId: string;
   question: string;
   marketplace: AiVisibilityMarketplace;
-}) {
+}): Promise<{ problem: string | null }> {
   const existing = await Repo.listQuestions(input.projectId);
   if (existing.length >= MAX_QUESTIONS_PER_PROJECT) {
-    throw new AppError(
-      "VALIDATION_ERROR",
-      `Máximo ${MAX_QUESTIONS_PER_PROJECT} preguntas por proyecto. Borra alguna para añadir otra.`,
-    );
+    return {
+      problem: `Máximo ${MAX_QUESTIONS_PER_PROJECT} preguntas por proyecto. Borra alguna para añadir otra.`,
+    };
   }
   const question = input.question.replace(/\s+/g, " ").trim();
   const duplicate = existing.some(
@@ -297,13 +295,14 @@ async function addQuestion(input: {
       row.marketplace === input.marketplace &&
       row.question.toLowerCase() === question.toLowerCase(),
   );
-  if (duplicate) throw new AppError("VALIDATION_ERROR", "Ya tienes esa pregunta.");
+  if (duplicate) return { problem: "Ya tienes esa pregunta." };
   await Repo.insertQuestion({
     id: crypto.randomUUID(),
     projectId: input.projectId,
     question,
     marketplace: input.marketplace,
   });
+  return { problem: null };
 }
 
 async function removeQuestion(projectId: string, questionId: string) {
@@ -319,13 +318,21 @@ async function launch(input: {
   projectId: string;
   questionIds: string[];
   customer: BillingCustomerContext;
-}): Promise<{ posted: number; skipped: number; stoppedEarly: boolean }> {
+}): Promise<{
+  posted: number;
+  skipped: number;
+  stoppedEarly: boolean;
+  problem: string | null;
+}> {
   const terms = await Repo.getBrandTerms(input.projectId);
   if (terms.length === 0) {
-    throw new AppError(
-      "VALIDATION_ERROR",
-      "Primero escribe el nombre de tu marca: sin él no podemos saber si te mencionan.",
-    );
+    return {
+      posted: 0,
+      skipped: 0,
+      stoppedEarly: false,
+      problem:
+        "Primero guarda el nombre de tu marca (botón Guardar): sin él no podemos saber si te mencionan.",
+    };
   }
   const questions = (await Repo.listQuestions(input.projectId)).filter((row) =>
     input.questionIds.includes(row.id),
@@ -367,11 +374,11 @@ async function launch(input: {
         posted += 1;
       } catch (error) {
         console.warn("ai-visibility.post-failed", { questionId: question.id, error });
-        return { posted, skipped, stoppedEarly: true };
+        return { posted, skipped, stoppedEarly: true, problem: null };
       }
     }
   }
-  return { posted, skipped, stoppedEarly: false };
+  return { posted, skipped, stoppedEarly: false, problem: null };
 }
 
 export const AiVisibilityService = {
