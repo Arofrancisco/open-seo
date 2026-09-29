@@ -60,6 +60,7 @@ import { Route as ProjectPProjectIdBacklinksRouteImport } from './routes/_projec
 import { Route as ProjectPProjectIdAuditRouteImport } from './routes/_project/p/$projectId/audit'
 import { Route as ProjectPProjectIdAmazonReverseAsinRouteImport } from './routes/_project/p/$projectId/amazon-reverse-asin'
 import { Route as ProjectPProjectIdAmazonRankRouteImport } from './routes/_project/p/$projectId/amazon-rank'
+import { Route as ProjectPProjectIdAiVisibilityRouteImport } from './routes/_project/p/$projectId/ai-visibility'
 import { Route as ProjectPProjectIdSettingsIndexRouteImport } from './routes/_project/p/$projectId/settings/index'
 import { Route as ProjectPProjectIdReportsIndexRouteImport } from './routes/_project/p/$projectId/reports/index'
 import { Route as ProjectPProjectIdRankTrackingIndexRouteImport } from './routes/_project/p/$projectId/rank-tracking/index'
@@ -335,6 +336,12 @@ const ProjectPProjectIdAmazonRankRoute =
     path: '/amazon-rank',
     getParentRoute: () => ProjectPProjectIdRouteRoute,
   } as any)
+const ProjectPProjectIdAiVisibilityRoute =
+  ProjectPProjectIdAiVisibilityRouteImport.update({
+    id: '/ai-visibility',
+    path: '/ai-visibility',
+    getParentRoute: () => ProjectPProjectIdRouteRoute,
+  } as any)
 const ProjectPProjectIdSettingsIndexRoute =
   ProjectPProjectIdSettingsIndexRouteImport.update({
     id: '/',
@@ -427,6 +434,7 @@ export interface FileRoutesByFullPath {
   '/settings/': typeof AppSettingsIndexRoute
   '/onboarding/': typeof AuthenticatedOnboardingIndexRoute
   '/s/$token/': typeof STokenIndexRoute
+  '/p/$projectId/ai-visibility': typeof ProjectPProjectIdAiVisibilityRoute
   '/p/$projectId/amazon-rank': typeof ProjectPProjectIdAmazonRankRoute
   '/p/$projectId/amazon-reverse-asin': typeof ProjectPProjectIdAmazonReverseAsinRoute
   '/p/$projectId/audit': typeof ProjectPProjectIdAuditRouteWithChildren
@@ -484,6 +492,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AppSettingsIndexRoute
   '/onboarding': typeof AuthenticatedOnboardingIndexRoute
   '/s/$token': typeof STokenIndexRoute
+  '/p/$projectId/ai-visibility': typeof ProjectPProjectIdAiVisibilityRoute
   '/p/$projectId/amazon-rank': typeof ProjectPProjectIdAmazonRankRoute
   '/p/$projectId/amazon-reverse-asin': typeof ProjectPProjectIdAmazonReverseAsinRoute
   '/p/$projectId/backlinks': typeof ProjectPProjectIdBacklinksRoute
@@ -545,6 +554,7 @@ export interface FileRoutesById {
   '/_app/settings/': typeof AppSettingsIndexRoute
   '/_authenticated/onboarding/': typeof AuthenticatedOnboardingIndexRoute
   '/s/$token/': typeof STokenIndexRoute
+  '/_project/p/$projectId/ai-visibility': typeof ProjectPProjectIdAiVisibilityRoute
   '/_project/p/$projectId/amazon-rank': typeof ProjectPProjectIdAmazonRankRoute
   '/_project/p/$projectId/amazon-reverse-asin': typeof ProjectPProjectIdAmazonReverseAsinRoute
   '/_project/p/$projectId/audit': typeof ProjectPProjectIdAuditRouteWithChildren
@@ -606,6 +616,7 @@ export interface FileRouteTypes {
     | '/settings/'
     | '/onboarding/'
     | '/s/$token/'
+    | '/p/$projectId/ai-visibility'
     | '/p/$projectId/amazon-rank'
     | '/p/$projectId/amazon-reverse-asin'
     | '/p/$projectId/audit'
@@ -663,6 +674,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/onboarding'
     | '/s/$token'
+    | '/p/$projectId/ai-visibility'
     | '/p/$projectId/amazon-rank'
     | '/p/$projectId/amazon-reverse-asin'
     | '/p/$projectId/backlinks'
@@ -723,6 +735,7 @@ export interface FileRouteTypes {
     | '/_app/settings/'
     | '/_authenticated/onboarding/'
     | '/s/$token/'
+    | '/_project/p/$projectId/ai-visibility'
     | '/_project/p/$projectId/amazon-rank'
     | '/_project/p/$projectId/amazon-reverse-asin'
     | '/_project/p/$projectId/audit'
@@ -1133,6 +1146,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectPProjectIdAmazonRankRouteImport
       parentRoute: typeof ProjectPProjectIdRouteRoute
     }
+    '/_project/p/$projectId/ai-visibility': {
+      id: '/_project/p/$projectId/ai-visibility'
+      path: '/ai-visibility'
+      fullPath: '/p/$projectId/ai-visibility'
+      preLoaderRoute: typeof ProjectPProjectIdAiVisibilityRouteImport
+      parentRoute: typeof ProjectPProjectIdRouteRoute
+    }
     '/_project/p/$projectId/settings/': {
       id: '/_project/p/$projectId/settings/'
       path: '/'
@@ -1304,6 +1324,7 @@ const ProjectPProjectIdSettingsRouteWithChildren =
   )
 
 interface ProjectPProjectIdRouteRouteChildren {
+  ProjectPProjectIdAiVisibilityRoute: typeof ProjectPProjectIdAiVisibilityRoute
   ProjectPProjectIdAmazonRankRoute: typeof ProjectPProjectIdAmazonRankRoute
   ProjectPProjectIdAmazonReverseAsinRoute: typeof ProjectPProjectIdAmazonReverseAsinRoute
   ProjectPProjectIdAuditRoute: typeof ProjectPProjectIdAuditRouteWithChildren
@@ -1326,6 +1347,7 @@ interface ProjectPProjectIdRouteRouteChildren {
 
 const ProjectPProjectIdRouteRouteChildren: ProjectPProjectIdRouteRouteChildren =
   {
+    ProjectPProjectIdAiVisibilityRoute: ProjectPProjectIdAiVisibilityRoute,
     ProjectPProjectIdAmazonRankRoute: ProjectPProjectIdAmazonRankRoute,
     ProjectPProjectIdAmazonReverseAsinRoute:
       ProjectPProjectIdAmazonReverseAsinRoute,

@@ -9,6 +9,7 @@ import {
   ListOrdered,
   Link2,
   MessageSquare,
+  Radar,
   ScanSearch,
   Search,
   Sparkles,
@@ -70,6 +71,11 @@ const projectNavItems = [
     to: "/p/$projectId/brand-lookup" as const,
     label: "Brand Lookup",
     icon: Sparkles,
+  },
+  {
+    to: "/p/$projectId/ai-visibility" as const,
+    label: "¿Te recomienda la IA? (beta)",
+    icon: Radar,
   },
   {
     to: "/p/$projectId/amazon-reverse-asin" as const,
@@ -137,6 +143,7 @@ export function getProjectNavGroups(projectId: string) {
         byPath("/p/$projectId/domain"),
         byPath("/p/$projectId/backlinks"),
         byPath("/p/$projectId/brand-lookup"),
+        byPath("/p/$projectId/ai-visibility"),
         byPath("/p/$projectId/amazon-reverse-asin"),
         byPath("/p/$projectId/prompt-explorer"),
       ],

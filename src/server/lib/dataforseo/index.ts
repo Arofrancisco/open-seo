@@ -43,6 +43,11 @@ export {
   type AmazonTopResult,
 } from "@/server/lib/dataforseo/merchant";
 
+export {
+  fetchLlmScraperTaskResult,
+  type LlmScraperOutcome,
+} from "@/server/lib/dataforseo/llm-scraper";
+
 export type {
   LabsKeywordDataItem,
   DomainRankedKeywordItem,

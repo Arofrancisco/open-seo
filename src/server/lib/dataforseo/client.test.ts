@@ -64,6 +64,7 @@ vi.mock("@/server/lib/dataforseo/labs", () => ({
   fetchRelevantPages: vi.fn(),
   fetchKeywordOverview: vi.fn(),
   fetchSerpCompetitors: vi.fn(),
+  fetchAmazonBulkSearchVolume: vi.fn(),
 }));
 vi.mock("@/server/lib/dataforseo/serp", () => ({
   fetchLiveSerp: vi.fn(),

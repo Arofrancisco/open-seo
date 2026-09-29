@@ -60,6 +60,7 @@ import {
   fetchLlmResponse,
   fetchLlmTopPages,
 } from "@/server/lib/dataforseo/ai";
+import { postLlmScraperTask } from "@/server/lib/dataforseo/llm-scraper";
 import { isHostedServerAuthMode } from "@/server/lib/runtime-env";
 import { AppError } from "@/server/lib/errors";
 
@@ -155,6 +156,9 @@ export function createDataforseoClient(customer: BillingCustomerContext) {
       topPages: meter(customer, fetchLlmTopPages),
       crossAggregatedMetrics: meter(customer, fetchLlmCrossAggregatedMetrics),
       llmResponse: meter(customer, fetchLlmResponse),
+      // task_post is where DataForSEO charges; collection runs unmetered
+      // through fetchLlmScraperTaskResult (see index.ts).
+      llmScraperTaskPost: meter(customer, postLlmScraperTask, "ai_visibility"),
     },
   } as const;
 }

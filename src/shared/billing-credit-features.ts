@@ -8,7 +8,8 @@ export type CreditFeature =
   | "ai_prompt_responses"
   | "local_seo"
   | "agent"
-  | "amazon";
+  | "amazon"
+  | "ai_visibility";
 
 const CREDIT_FEATURE_LABELS: Record<string, string> = {
   keyword_research: "Keyword Research",
@@ -25,6 +26,7 @@ const CREDIT_FEATURE_LABELS: Record<string, string> = {
   onboarding: "Onboarding",
   agent: "SAM Agent",
   amazon: "Amazon",
+  ai_visibility: "AI Visibility",
 };
 
 /**
@@ -49,6 +51,8 @@ export function mapDataforseoPathToCreditFeature(
         ? "local_seo"
         : "keyword_research";
     case "ai_optimization":
+      // llm_scraper tasks are the "does ChatGPT recommend me" checks.
+      if (normalizedPath[3] === "llm_scraper") return "ai_visibility";
       // llm_mentions/* are brand-citation lookups; every other ai_optimization
       // endpoint is a provider /llm_responses prompt response (chat_gpt, claude,
       // gemini, perplexity).
