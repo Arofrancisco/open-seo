@@ -55,7 +55,8 @@ export function SearchHistorySection<TItem extends { timestamp: number }>({
         <div className="flex items-center gap-2">
           <History className="size-4 text-base-content/45" />
           <span className="text-sm text-base-content/60">
-            {history.length} recent {noun}
+            {history.length} {noun}
+            {history.length !== 1 ? "s" : ""} reciente
             {history.length !== 1 ? "s" : ""}
           </span>
         </div>
@@ -76,7 +77,7 @@ export function SearchHistorySection<TItem extends { timestamp: number }>({
             )}
             <div className="flex items-center gap-2 shrink-0">
               <span className="text-xs text-base-content/40">
-                {new Date(item.timestamp).toLocaleDateString(undefined, {
+                {new Date(item.timestamp).toLocaleDateString("es-ES", {
                   month: "short",
                   day: "numeric",
                 })}
@@ -85,7 +86,7 @@ export function SearchHistorySection<TItem extends { timestamp: number }>({
                 type="button"
                 className="btn btn-ghost btn-xs opacity-0 group-hover:opacity-100 p-1"
                 onClick={() => onRemoveHistoryItem(item.timestamp)}
-                aria-label="Remove from history"
+                aria-label="Quitar del historial"
               >
                 <X className="size-3" />
               </button>

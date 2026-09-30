@@ -18,6 +18,15 @@ import { BrandLookupResults } from "@/client/features/ai-search/components/Brand
 import { BrandLookupSearchCard } from "@/client/features/ai-search/components/BrandLookupSearchCard";
 import { BrandLookupHistorySection } from "@/client/features/ai-search/components/BrandLookupHistorySection";
 import { AiSearchLoadingState } from "@/client/features/ai-search/components/AiSearchLoadingState";
+import {
+  BRAND_LOOKUP_DISPLAYED_COST_USD,
+  estimatedCredits,
+} from "@/client/features/ai-search/brandLookupCost";
+import {
+  FREE_PLAN_CREDITS,
+  PAID_PLAN_MONTHLY_CREDITS,
+  formatCredits,
+} from "@/shared/plan-credits";
 import { AiSearchPaidPlanGate } from "@/client/features/ai-search/components/AiSearchPaidPlanGate";
 import { useBrandLookupSearchHistory } from "@/client/hooks/useBrandLookupSearchHistory";
 import {
@@ -43,23 +52,23 @@ type Props = {
   ) => void;
 };
 
-const KEYWORD_SCOPE_REASON = "Scopes apply to domain lookups";
+const KEYWORD_SCOPE_REASON = "El alcance solo se aplica a búsquedas de dominios";
 
 const BRAND_LOOKUP_BULLETS = [
   {
     icon: TrendingUp,
-    title: "Track AI visibility",
-    body: "See estimated counts for ChatGPT and Google AI Overview answers that cite your brand, and watch the trend month over month.",
+    title: "Sigue tu visibilidad en IA",
+    body: "Consulta cuántas respuestas de ChatGPT y de los resúmenes con IA de Google citan tu marca, y mira cómo evoluciona mes a mes.",
   },
   {
     icon: Quote,
-    title: "See the prompts",
-    body: "View sample user questions where LLMs reference your brand or domain.",
+    title: "Mira las preguntas",
+    body: "Ejemplos de preguntas de usuarios en las que las IA mencionan tu marca o tu dominio.",
   },
   {
     icon: BarChart3,
-    title: "Map the competition",
-    body: "Spot the pages LLMs cite alongside you so you know who's competing for attention in AI answers.",
+    title: "Mapea la competencia",
+    body: "Descubre qué páginas citan las IA junto a la tuya y quién compite contigo por aparecer en sus respuestas.",
   },
 ];
 
@@ -179,14 +188,14 @@ function BrandLookupPageInner({
     if (trimmed.length === 0) {
       setValidationError({
         field: "query",
-        message: "Enter a brand name or domain",
+        message: "Escribe una marca o un dominio",
       });
       return;
     }
     if (trimmed.length > BRAND_LOOKUP_MAX_INPUT_LENGTH) {
       setValidationError({
         field: "query",
-        message: `Keep it under ${BRAND_LOOKUP_MAX_INPUT_LENGTH} characters`,
+        message: `Máximo ${BRAND_LOOKUP_MAX_INPUT_LENGTH} caracteres`,
       });
       return;
     }
@@ -201,7 +210,7 @@ function BrandLookupPageInner({
     if (tooLong) {
       setValidationError({
         field: "competitors",
-        message: `Keep each competitor under ${BRAND_LOOKUP_MAX_INPUT_LENGTH} characters`,
+        message: `Cada competidor admite hasta ${BRAND_LOOKUP_MAX_INPUT_LENGTH} caracteres`,
       });
       return;
     }
@@ -213,7 +222,7 @@ function BrandLookupPageInner({
     if (matchesTarget) {
       setValidationError({
         field: "competitors",
-        message: `"${matchesTarget}" matches the brand you're looking up — remove it from competitors`,
+        message: `"${matchesTarget}" es la misma marca que estás buscando: quítala de los competidores`,
       });
       return;
     }
@@ -224,7 +233,7 @@ function BrandLookupPageInner({
     ) {
       setValidationError({
         field: "query",
-        message: "Add a path to use Subfolder (e.g. example.com/blog)",
+        message: "Añade una ruta para usar Subcarpeta (por ejemplo, ejemplo.com/blog)",
       });
       return;
     }
@@ -262,15 +271,23 @@ function BrandLookupPageInner({
         <div>
           <h1 className="text-2xl font-semibold">Brand Lookup</h1>
           <p className="text-sm text-base-content/70">
-            See how AI search cites any brand name or domain.
+            Comprueba cuánto citan las IA (ChatGPT y los resúmenes con IA de
+            Google) cualquier marca o dominio.
           </p>
         </div>
 
         {planGate.isFreePlan ? (
           <AiSearchPaidPlanGate
             feature="Brand Lookup"
-            description="See how ChatGPT and Google AI Overview cite any brand or domain — total mentions, sample prompts where it appears, and the pages cited alongside it."
+            description="Consulta cómo citan ChatGPT y los resúmenes con IA de Google cualquier marca o dominio: total de menciones, ejemplos de preguntas en las que aparece y las páginas que se citan junto a ella."
             bullets={BRAND_LOOKUP_BULLETS}
+            costNote={`Coste: cada búsqueda consume unos ${formatCredits(
+              estimatedCredits(BRAND_LOOKUP_DISPLAYED_COST_USD),
+            )} créditos. El plan gratuito incluye ${formatCredits(
+              FREE_PLAN_CREDITS,
+            )}, así que esta función es solo para el plan de pago (${formatCredits(
+              PAID_PLAN_MONTHLY_CREDITS,
+            )} créditos al mes). Con el plan gratuito sí puedes usar «¿Te recomienda la IA?», que cuesta unos 10 créditos por pregunta.`}
           />
         ) : (
           <>
@@ -317,7 +334,7 @@ function BrandLookupPageInner({
                     className="btn btn-ghost btn-sm gap-2 px-0 text-base-content/70 hover:bg-transparent"
                   >
                     <ArrowLeft className="size-4" />
-                    Recent searches
+                    Búsquedas recientes
                   </Link>
                 </div>
                 <BrandLookupResults result={resultData} projectId={projectId} />

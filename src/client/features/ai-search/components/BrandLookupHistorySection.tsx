@@ -19,8 +19,8 @@ export function BrandLookupHistorySection({ projectId, ...props }: Props) {
     <SearchHistorySection
       {...props}
       emptyIcon={Sparkles}
-      emptyMessage="Search a brand name or domain to see how AI cites it"
-      noun="lookup"
+      emptyMessage="Busca una marca o un dominio para ver cómo la citan las IA"
+      noun="búsqueda"
       renderItemLink={(item, content) => (
         <Link
           from="/p/$projectId/brand-lookup"
@@ -54,7 +54,7 @@ export function BrandLookupHistorySection({ projectId, ...props }: Props) {
           </p>
           {item.competitors.length > 0 ? (
             <p className="truncate text-xs text-base-content/50">
-              vs {item.competitors.join(", ")}
+              frente a {item.competitors.join(", ")}
             </p>
           ) : null}
         </div>

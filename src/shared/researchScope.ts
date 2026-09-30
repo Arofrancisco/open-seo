@@ -33,10 +33,10 @@ export type ResearchScope = (typeof RESEARCH_SCOPES)[number];
 export const researchScopeSchema = z.enum(RESEARCH_SCOPES);
 
 export const RESEARCH_SCOPE_LABELS: Record<ResearchScope, string> = {
-  exact_url: "Exact URL",
-  subfolder: "Subfolder",
-  domain: "Domain",
-  subdomains: "Subdomains",
+  exact_url: "URL exacta",
+  subfolder: "Subcarpeta",
+  domain: "Dominio",
+  subdomains: "Subdominios",
 };
 
 /** Base wording for MCP `scope` params; tools append their own caveats. */
@@ -45,10 +45,10 @@ export const RESEARCH_SCOPE_PARAM_DESCRIPTION =
 
 /** One-line explanations shown in the scope dropdown. */
 export const RESEARCH_SCOPE_DESCRIPTIONS: Record<ResearchScope, string> = {
-  exact_url: "One page only",
-  subfolder: "The path and everything under it",
-  domain: "The hostname, without subdomains",
-  subdomains: "The domain plus all its subdomains",
+  exact_url: "Solo una página",
+  subfolder: "La ruta y todo lo que cuelga de ella",
+  domain: "El dominio, sin subdominios",
+  subdomains: "El dominio y todos sus subdominios",
 };
 
 /** Wildcard-style pattern examples shown under each scope option. */

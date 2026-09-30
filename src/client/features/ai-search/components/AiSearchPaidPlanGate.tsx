@@ -6,28 +6,40 @@ type Props = {
   feature: string;
   description: string;
   bullets: Array<{ icon: LucideIcon; title: string; body: string }>;
+  /** Optional highlighted note, e.g. what the feature costs in credits. */
+  costNote?: string;
 };
 
-export function AiSearchPaidPlanGate({ feature, description, bullets }: Props) {
+export function AiSearchPaidPlanGate({
+  feature,
+  description,
+  bullets,
+  costNote,
+}: Props) {
   return (
     <div className="mx-auto max-w-3xl overflow-hidden rounded-xl border border-base-300 bg-base-100 shadow-sm">
       <div className="flex flex-col gap-5 px-6 py-6 sm:flex-row sm:items-start sm:justify-between">
         <div className="max-w-xl space-y-2">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
             <Sparkles className="size-3.5" />
-            Paid plan
+            Plan de pago
           </span>
           <h2 className="text-xl font-semibold tracking-tight">
-            Unlock {feature}
+            Desbloquea {feature}
           </h2>
           <p className="text-sm text-base-content/70">{description}</p>
+          {costNote ? (
+            <p className="rounded-lg border border-warning/40 bg-warning/10 p-3 text-sm text-base-content/80">
+              {costNote}
+            </p>
+          ) : null}
         </div>
         <Link
           to={SUBSCRIBE_ROUTE}
           search={{ upgrade: true }}
           className="btn btn-primary shrink-0"
         >
-          Upgrade
+          Pasar al plan de pago
         </Link>
       </div>
 

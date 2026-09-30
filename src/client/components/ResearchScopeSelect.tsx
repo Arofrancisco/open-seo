@@ -28,7 +28,7 @@ export function ResearchScopeSelect({
   onChange,
   disabledReason,
   className = "",
-  "aria-label": ariaLabel = "Research scope",
+  "aria-label": ariaLabel = "Alcance de la búsqueda",
 }: Props) {
   const [open, setOpen] = useState(false);
   const [activeScope, setActiveScope] = useState<ResearchScope>(value);
