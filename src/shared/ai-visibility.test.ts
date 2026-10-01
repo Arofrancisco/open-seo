@@ -19,8 +19,8 @@ const answer = (overrides: Partial<LlmScraperAnswer> = {}): LlmScraperAnswer => 
 
 describe("mentions", () => {
   it("ignores accents and case but not word boundaries", () => {
-    expect(mentions("Delantales de Rizo de SÁOTI", "saoti")).toBe(true);
-    expect(mentions("Saori vende delantales", "Sao")).toBe(false);
+    expect(mentions("Zapatillas de running de ÁCME", "acme")).toBe(true);
+    expect(mentions("Acmeria vende zapatillas", "Acme")).toBe(false);
   });
 });
 
@@ -29,18 +29,18 @@ describe("analyzeAnswer", () => {
     const result = analyzeAnswer(
       answer({
         products: [
-          { title: "Delantal", merchant: "Otra tienda", domain: "otra.es", url: null },
-          { title: "Delantal rizo", merchant: null, domain: "www.vellora.es", url: null },
+          { title: "Zapatilla", merchant: "Otra tienda", domain: "otra.es", url: null },
+          { title: "Zapatilla running", merchant: null, domain: "www.acme.es", url: null },
         ],
       }),
-      ["vellora"],
+      ["acme"],
     );
     expect(result.brandProductPosition).toBe(2);
     expect(appears(result)).toBe(true);
   });
 
   it("reports no appearance when the brand is nowhere in the answer", () => {
-    const result = analyzeAnswer(answer({ text: "Compra en Amazon" }), ["vellora"]);
+    const result = analyzeAnswer(answer({ text: "Compra en Amazon" }), ["acme"]);
     expect(appears(result)).toBe(false);
   });
 });
@@ -51,12 +51,12 @@ describe("countCompetitors", () => {
       products: [
         { title: null, merchant: "Rival", domain: null, url: null },
         { title: null, merchant: "Rival", domain: null, url: null },
-        { title: null, merchant: "Vellora", domain: null, url: null },
+        { title: null, merchant: "Acme", domain: null, url: null },
       ],
     });
     const second = answer({ brandEntities: ["rival", "Otro"] });
     expect(
-      countCompetitors([competitorNames(first), competitorNames(second)], ["vellora"]),
+      countCompetitors([competitorNames(first), competitorNames(second)], ["acme"]),
     ).toEqual([
       { name: "Rival", answers: 2 },
       { name: "Otro", answers: 1 },

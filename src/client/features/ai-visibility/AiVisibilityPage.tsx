@@ -119,9 +119,9 @@ export function AiVisibilityPage({ projectId }: Props) {
             <QuestionForm projectId={projectId} onAdded={refresh} />
             <p className="text-xs text-base-content/60">
               <strong>¿Cuántas preguntas?</strong> Empieza con 5 a 8, cada una distinta:
-              la búsqueda genérica («delantal de rizo»), una con la necesidad («para
-              secar manos y platos»), una con un atributo («de calidad», «envío
-              rápido») y una comparativa. Cada pregunta cuesta unos{" "}
+              la búsqueda genérica («zapatillas de running»), una con la necesidad
+              («para correr en asfalto»), una con un atributo («de calidad»,
+              «envío rápido») y una comparativa. Cada pregunta cuesta unos{" "}
               {estimateCredits(data.runsPerQuestion)} créditos por comprobación; con 8
               preguntas, unos {estimateCredits(8 * data.runsPerQuestion)} créditos.
               Máximo {data.maxQuestions}.
@@ -145,8 +145,8 @@ export function AiVisibilityPage({ projectId }: Props) {
               </div>
             ) : (
               <p className="rounded-xl border border-dashed border-base-300 p-6 text-center text-sm text-base-content/70">
-                Añade una pregunta de comprador, por ejemplo «¿qué delantal de
-                rizo me recomiendas?», y comprueba si ChatGPT te nombra.
+                Añade una pregunta de comprador, por ejemplo «¿qué zapatillas
+                de running me recomiendas?», y comprueba si ChatGPT te nombra.
               </p>
             )}
 
@@ -221,7 +221,7 @@ function BrandCard({
         <input
           id="ai-visibility-brand"
           className="input input-bordered w-full"
-          placeholder="Vellora, vellora.es"
+          placeholder="Tu marca, tumarca.es"
           value={value}
           onChange={(event) => setValue(event.target.value)}
         />
@@ -272,7 +272,7 @@ function QuestionForm({
         <input
           id="ai-visibility-question"
           className="input input-bordered w-full"
-          placeholder="¿Qué delantal de rizo de calidad me recomiendas?"
+          placeholder="¿Qué zapatillas de running de calidad me recomiendas?"
           maxLength={300}
           value={question}
           onChange={(event) => setQuestion(event.target.value)}

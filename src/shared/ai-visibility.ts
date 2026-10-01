@@ -73,7 +73,7 @@ export function mentionsAny(
   return terms.some((term) => mentions(text, term));
 }
 
-/** A term like "vellora.es" or "saoti" also matches the domain "www.vellora.es". */
+/** A term like "acme.es" or "acme" also matches the domain "www.acme.es". */
 function domainMatches(domain: string | null, terms: readonly string[]): boolean {
   if (!domain) return false;
   const host = fold(domain);
