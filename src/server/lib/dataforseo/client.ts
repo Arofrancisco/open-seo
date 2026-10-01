@@ -60,6 +60,7 @@ import {
   fetchLlmResponse,
   fetchLlmTopPages,
 } from "@/server/lib/dataforseo/ai";
+import { fetchGoogleTrends } from "@/server/lib/dataforseo/google-trends";
 import { postLlmScraperTask } from "@/server/lib/dataforseo/llm-scraper";
 import { isHostedServerAuthMode } from "@/server/lib/runtime-env";
 import { AppError } from "@/server/lib/errors";
@@ -124,6 +125,8 @@ export function createDataforseoClient(customer: BillingCustomerContext) {
       // Google Ads endpoints for countries Labs doesn't support.
       adsIdeas: meter(customer, fetchAdsKeywordIdeas),
       adsSearchVolume: meter(customer, fetchAdsSearchVolume),
+      // Google Trends (Explore, live): one request is billed per call.
+      trends: meter(customer, fetchGoogleTrends),
     },
     domain: {
       rankOverview: meter(customer, fetchDomainRankOverview),

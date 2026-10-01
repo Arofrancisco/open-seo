@@ -49,6 +49,12 @@ export {
 } from "@/server/lib/dataforseo/llm-scraper";
 
 export type {
+  GoogleTrendsResult,
+  TrendsRegion,
+  TrendsRelatedQuery,
+} from "@/server/lib/dataforseo/google-trends";
+
+export type {
   LabsKeywordDataItem,
   DomainRankedKeywordItem,
   RelevantPagesItem,

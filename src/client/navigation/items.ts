@@ -78,6 +78,11 @@ const projectNavItems = [
     icon: Radar,
   },
   {
+    to: "/p/$projectId/google-trends" as const,
+    label: "¿Cuándo se busca? (beta)",
+    icon: TrendingUp,
+  },
+  {
     to: "/p/$projectId/amazon-reverse-asin" as const,
     label: "Amazon Reverse ASIN (beta)",
     icon: ScanSearch,
@@ -144,6 +149,7 @@ export function getProjectNavGroups(projectId: string) {
         byPath("/p/$projectId/backlinks"),
         byPath("/p/$projectId/brand-lookup"),
         byPath("/p/$projectId/ai-visibility"),
+        byPath("/p/$projectId/google-trends"),
         byPath("/p/$projectId/amazon-reverse-asin"),
         byPath("/p/$projectId/prompt-explorer"),
       ],
