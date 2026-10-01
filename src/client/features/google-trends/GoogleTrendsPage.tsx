@@ -38,6 +38,7 @@ type Params = {
 // DataForSEO Google Trends Explore, live: $0.011 per request, whatever the
 // number of keywords (verified 01/10/2026). Used only for the estimate shown.
 const TRENDS_REQUEST_COST_USD = 0.011;
+const MIN_RELIABLE_POINTS = 24;
 const REQUEST_CREDITS = Math.ceil(
   TRENDS_REQUEST_COST_USD * SEO_DATA_COST_MARKUP * AUTUMN_SEO_DATA_CREDITS_PER_USD,
 );
@@ -87,6 +88,14 @@ export function GoogleTrendsPage({ projectId }: Props) {
 
   const points = graph.data?.points ?? [];
   const summary = params ? summarizeKeywords(params.keywords, points) : [];
+  const firstDate = points[0]?.from;
+  const lastDate = points[points.length - 1]?.from;
+  const monthsSinceLast = lastDate
+    ? (Date.now() - Date.parse(`${lastDate}T00:00:00Z`)) / (30 * 24 * 3600 * 1000)
+    : 0;
+  // Few points, or a series that stops long ago, means Google has little data
+  // for this search in this source: the average and the months are unreliable.
+  const sparse = points.length > 0 && (points.length < MIN_RELIABLE_POINTS || monthsSinceLast > 4);
 
   return (
     <div className="px-4 py-4 pb-24 overflow-auto md:px-6 md:py-6 md:pb-8">
@@ -180,7 +189,24 @@ export function GoogleTrendsPage({ projectId }: Props) {
             </p>
           ) : (
             <div className="space-y-4 rounded-xl border border-base-300 bg-base-100 p-4">
+              {sparse ? (
+                <div role="alert" className="flex items-start gap-2 rounded-lg border border-warning/40 bg-warning/10 p-3 text-sm">
+                  <AlertCircle className="mt-0.5 size-4 shrink-0 text-warning" />
+                  <span>
+                    <strong>Google tiene pocos datos para esta búsqueda en esta fuente</strong>
+                    : solo {points.length} puntos
+                    {firstDate && lastDate ? `, de ${formatTrendDate(firstDate)} a ${formatTrendDate(lastDate)}` : ""}.
+                    El gráfico y los meses con más interés no son fiables. Prueba con la fuente «Búsqueda de
+                    Google» o con una palabra más habitual.
+                  </span>
+                </div>
+              ) : null}
               <TrendsChart keywords={params.keywords} points={points} />
+              {firstDate && lastDate ? (
+                <p className="text-xs text-base-content/50">
+                  {points.length} puntos de datos, de {formatTrendDate(firstDate)} a {formatTrendDate(lastDate)}.
+                </p>
+              ) : null}
               <div className="overflow-x-auto">
                 <table className="table table-sm">
                   <thead>
@@ -188,7 +214,7 @@ export function GoogleTrendsPage({ projectId }: Props) {
                   </thead>
                   <tbody>
                     {summary.map((row, index) => {
-                      const seasonality = monthlySeasonality(points, index);
+                      const seasonality = points.length >= MIN_RELIABLE_POINTS ? monthlySeasonality(points, index) : null;
                       return (
                         <tr key={row.keyword}>
                           <td>
@@ -198,7 +224,7 @@ export function GoogleTrendsPage({ projectId }: Props) {
                           <td>{row.average}</td>
                           <td>{row.peakFrom ? formatTrendDate(row.peakFrom) : "—"}</td>
                           <td className="capitalize">
-                            {seasonality ? bestMonths(seasonality).map(monthName).join(", ") : "Elige 5 años para verlo"}
+                            {seasonality ? bestMonths(seasonality).map(monthName).join(", ") : points.length < MIN_RELIABLE_POINTS ? "Pocos datos" : "Elige 5 años para verlo"}
                           </td>
                         </tr>
                       );
@@ -224,6 +250,11 @@ export function GoogleTrendsPage({ projectId }: Props) {
                 regions.isPending ? <p className="text-sm text-base-content/60">Cargando regiones…</p> : (
                   <div>
                     <h3 className="mb-1 text-sm font-semibold">Dónde hay más interés</h3>
+                    {(regions.data?.regions ?? []).length === 0 ? (
+                      <p className="text-sm text-base-content/60">
+                        Google no devuelve regiones para esta búsqueda en esta fuente. Prueba con «Búsqueda de Google».
+                      </p>
+                    ) : null}
                     <table className="table table-sm">
                       <thead><tr><th>Región</th>{params.keywords.map((word) => <th key={word}>{word}</th>)}</tr></thead>
                       <tbody>
@@ -244,6 +275,12 @@ export function GoogleTrendsPage({ projectId }: Props) {
 
               {showQueries ? (
                 queries.isPending ? <p className="text-sm text-base-content/60">Cargando búsquedas relacionadas…</p> : (
+                  (queries.data?.topQueries ?? []).length === 0 && (queries.data?.risingQueries ?? []).length === 0 ? (
+                    <p className="text-sm text-base-content/60">
+                      Google no devuelve búsquedas relacionadas para esta palabra en esta fuente. Prueba con
+                      «Búsqueda de Google» o con una palabra más habitual.
+                    </p>
+                  ) : (
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div>
                       <h3 className="mb-1 text-sm font-semibold">Más buscadas</h3>
@@ -262,6 +299,7 @@ export function GoogleTrendsPage({ projectId }: Props) {
                       </ul>
                     </div>
                   </div>
+                  )
                 )
               ) : null}
             </div>

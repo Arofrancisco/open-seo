@@ -46,19 +46,19 @@ export function FreePlanBanner() {
       search={{ upgrade: true }}
       className="link link-primary font-medium"
     >
-      Upgrade your plan
+      Pasa al plan de pago
     </Link>
   ) : (
     <Link to={BILLING_ROUTE} className="link link-primary font-medium">
-      Buy more credits
+      Compra más créditos
     </Link>
   );
 
   if (isOutOfCredits) {
     return (
       <BannerShell variant="error">
-        You&rsquo;ve used all your credits. {creditsActionLink} to continue
-        using PlanetaSEO.
+        Has gastado todos tus créditos. {creditsActionLink} para seguir
+        usando PlanetaSEO.
       </BannerShell>
     );
   }
@@ -66,7 +66,7 @@ export function FreePlanBanner() {
   if (isLowCredits) {
     return (
       <BannerShell variant="warning">
-        You&rsquo;re running low on credits. {creditsActionLink} to keep using
+        Te quedan pocos créditos. {creditsActionLink} para seguir usando
         PlanetaSEO.
       </BannerShell>
     );
@@ -75,17 +75,17 @@ export function FreePlanBanner() {
   if (isFreePlan) {
     return (
       <BannerShell variant="info">
-        We hope you&rsquo;re enjoying PlanetaSEO!{" "}
+        Esperamos que PlanetaSEO te esté gustando.{" "}
         <Link
           to={SUBSCRIBE_ROUTE}
           search={{ upgrade: true }}
           className="link link-primary font-medium"
         >
-          Upgrade anytime
+          Pasa al plan de pago cuando quieras
         </Link>{" "}
-        or{" "}
+        o{" "}
         <Link to="/support" className="link link-primary font-medium">
-          reach out with questions
+          escríbenos si tienes dudas
         </Link>
         .
       </BannerShell>

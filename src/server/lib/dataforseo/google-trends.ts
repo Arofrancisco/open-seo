@@ -111,9 +111,18 @@ export async function fetchGoogleTrends(
     risingQueries: [],
   };
 
+  // If the provider answers with items we cannot read, say so in the logs: an
+  // empty screen otherwise looks the same as "Google has no data".
+  if (!result.success) {
+    console.warn("google-trends.unreadable-result", { item: input.item, source: input.source });
+  } else if (items.length === 0) {
+    console.warn("google-trends.no-items", { item: input.item, source: input.source, location: input.locationCode });
+  }
+
   for (const item of items) {
     if (item.type === ITEM_TYPE.graph) {
       const rows = z.array(graphPointSchema).safeParse(item.data);
+      if (!rows.success) console.warn("google-trends.graph-shape-mismatch");
       if (rows.success) {
         empty.points = rows.data
           .filter((row) => row.missing_data !== true)
@@ -129,6 +138,7 @@ export async function fetchGoogleTrends(
       }
     } else if (item.type === ITEM_TYPE.queries) {
       const rows = queriesSchema.safeParse(item.data);
+      if (!rows.success) console.warn("google-trends.queries-shape-mismatch");
       if (rows.success) {
         empty.topQueries = (rows.data.top ?? []).map(toRow);
         empty.risingQueries = (rows.data.rising ?? []).map(toRow);
