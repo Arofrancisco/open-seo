@@ -10,12 +10,12 @@ import {
 } from "@/serverFunctions/aiVisibility";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
 import {
+  AI_VISIBILITY_COUNTRY_LABELS,
   AI_VISIBILITY_MARKETPLACES,
   MAX_BRAND_TERMS,
   toAiVisibilityMarketplace,
   type AiVisibilityMarketplace,
 } from "@/shared/ai-visibility";
-import { getAmazonMarketplace } from "@/shared/amazon-marketplaces";
 import {
   estimateCredits,
   QuestionCard,
@@ -87,7 +87,9 @@ export function AiVisibilityPage({ projectId }: Props) {
               búsqueda web, tal como la ve un comprador, incluidas las tarjetas
               de producto. Cada pregunta se lanza {data?.runsPerQuestion ?? 3}{" "}
               veces porque ChatGPT no responde igual dos veces: el resultado es
-              «en cuántas de esas respuestas apareces».
+              «en cuántas de esas respuestas apareces». Sirve igual para
+              productos de Amazon que para una tienda propia (Shopify,
+              WooCommerce, PrestaShop…): escribe tu marca o tu dominio.
             </p>
             <p className="text-base-content/70">
               Rufus (Amazon) y Alexa+ no tienen datos públicos y no se pueden
@@ -96,6 +98,42 @@ export function AiVisibilityPage({ projectId }: Props) {
             </p>
           </div>
         </div>
+
+        <details className="rounded-lg border border-base-300 bg-base-100 p-3 text-sm">
+          <summary className="cursor-pointer font-medium">
+            Consejos: por qué ChatGPT enseña unos productos y no otros
+          </summary>
+          <ul className="mt-2 list-disc space-y-2 pl-5 text-base-content/70">
+            <li>
+              <strong>Las tarjetas de producto de ChatGPT llevan identificadores
+              de Google Shopping.</strong> Según la documentación del proveedor y
+              varios estudios del sector, ChatGPT toma sus productos de los
+              resultados de Google Shopping. Si tu tienda no tiene los productos
+              en Google Merchant Center, tienes menos opciones de salir en las
+              tarjetas (aunque puedes aparecer citada en el texto o en las
+              fuentes).
+            </li>
+            <li>
+              <strong>Tienda propia (Shopify, WooCommerce, PrestaShop).</strong>{" "}
+              Publica tu catálogo en Merchant Center con títulos claros, precio,
+              disponibilidad y marca. Es el mismo feed que usa Google Shopping.
+            </li>
+            <li>
+              <strong>Si ves a Amazon en las tarjetas</strong>, es porque sus
+              fichas también están en Google Shopping. Las campañas de Amazon
+              Ads (Sponsored Products, Brands y Display) no pujan en Google
+              Shopping: para eso se usa Google Ads con Merchant Center. Por
+              cierto, según la prensa del sector, Amazon dejó de pujar en Google
+              Shopping en julio de 2025 y volvió después en algunos mercados;
+              puede haber cambiado, compruébalo.
+            </li>
+            <li>
+              <strong>«Citan tu web como fuente»</strong> mide si tu dominio es
+              una de las páginas que ChatGPT usa para responder, aunque no salga
+              como tarjeta. Para una tienda propia es la cifra más importante.
+            </li>
+          </ul>
+        </details>
 
         {overview.isError ? (
           <ErrorAlert
@@ -214,7 +252,7 @@ function BrandCard({
       <div className="flex-1">
         <label className="label" htmlFor="ai-visibility-brand">
           <span className="label-text">
-            Tu marca (nombres o dominio, separados por comas; máx.{" "}
+            Tu marca o tu tienda (nombres o dominio, separados por comas; máx.{" "}
             {MAX_BRAND_TERMS})
           </span>
         </label>
@@ -290,7 +328,7 @@ function QuestionForm({
         >
           {AI_VISIBILITY_MARKETPLACES.map((code) => (
             <option key={code} value={code}>
-              {getAmazonMarketplace(code).label}
+              {AI_VISIBILITY_COUNTRY_LABELS[code]}
             </option>
           ))}
         </select>

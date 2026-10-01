@@ -36,6 +36,12 @@ export function toAiVisibilityMarketplace(value: string): AiVisibilityMarketplac
   return AI_VISIBILITY_MARKETPLACES.find((code) => code === value) ?? "ES";
 }
 
+/** Country names only: the check works for Amazon listings and for any online store. */
+export const AI_VISIBILITY_COUNTRY_LABELS: Record<AiVisibilityMarketplace, string> = {
+  ES: "España",
+  US: "Estados Unidos",
+};
+
 export const MAX_BRAND_TERMS = 5;
 export const MAX_QUESTIONS_PER_PROJECT = 20;
 export const RUNS_PER_QUESTION = 3;

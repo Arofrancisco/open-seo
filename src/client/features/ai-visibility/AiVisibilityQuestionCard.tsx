@@ -11,7 +11,7 @@ import {
   AUTUMN_SEO_DATA_CREDITS_PER_USD,
   SEO_DATA_COST_MARKUP,
 } from "@/shared/billing";
-import { getAmazonMarketplace } from "@/shared/amazon-marketplaces";
+import { AI_VISIBILITY_COUNTRY_LABELS } from "@/shared/ai-visibility";
 
 // DataForSEO ChatGPT LLM Scraper, priority queue (verified 29/09/2026). Only
 // used for the estimate shown before launching.
@@ -65,7 +65,7 @@ export function QuestionCard({
         <div>
           <p className="font-medium">{question.question}</p>
           <p className="text-xs text-base-content/60">
-            {getAmazonMarketplace(question.marketplace).label}
+            {AI_VISIBILITY_COUNTRY_LABELS[question.marketplace]}
           </p>
         </div>
         <div className="flex shrink-0 gap-2">
@@ -153,6 +153,7 @@ function BatchResult({
           {batch.bestProductPosition
             ? ` · mejor posición ${batch.bestProductPosition}`
             : ""}
+          {" · "}Citan tu web como fuente: {batch.cited} de {answered}
         </p>
         <p className="text-xs text-base-content/50">
           {formatDate(batch.createdAt)}

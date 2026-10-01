@@ -38,6 +38,8 @@ export type AiVisibilityBatchView = {
   appeared: number;
   /** Answers that show the brand among the product cards. */
   inProducts: number;
+  /** Answers whose cited sources include the brand's own site. */
+  cited: number;
   bestProductPosition: number | null;
   competitors: CompetitorCount[];
   fanOutQueries: string[];
@@ -106,6 +108,7 @@ function buildBatchView(
       }),
     ).length,
     inProducts: positions.length,
+    cited: done.filter((check) => check.brandCited === true).length,
     bestProductPosition: positions.length > 0 ? Math.min(...positions) : null,
     competitors: countCompetitors(
       perCheck.map(({ names }) => names),
