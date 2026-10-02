@@ -11,3 +11,4 @@ export * from "./gsc.schema";
 export * from "./telemetry.schema";
 export * from "./amazon.schema";
 export * from "./ai-visibility.schema";
+export * from "./product-opportunity.schema";

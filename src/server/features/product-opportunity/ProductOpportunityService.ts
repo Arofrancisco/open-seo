@@ -13,7 +13,17 @@ import {
   getRequiredEnvValue,
   isHostedServerAuthMode,
 } from "@/server/lib/runtime-env";
-import type { AmazonMarketplace } from "@/shared/amazon-marketplaces";
+import {
+  AMAZON_MARKETPLACE_CODES,
+  DEFAULT_AMAZON_MARKETPLACE_CODE,
+  getAmazonMarketplace,
+  type AmazonMarketplace,
+} from "@/shared/amazon-marketplaces";
+import {
+  ProductOpportunityRepository,
+  type AnalysisRow,
+  type ProductRow,
+} from "@/server/features/product-opportunity/ProductOpportunityRepository";
 import {
   claudeCostUsd,
   cleanMarketProducts,
@@ -148,15 +158,110 @@ async function meterClaude<T>(
 }
 
 export type ProductOpportunityResult = {
+  id: string;
+  createdAt: string;
   keyword: string;
   marketplace: AmazonMarketplace["code"];
+  context: string | null;
   summary: MarketSummary;
   products: MarketProduct[];
   verdict: NicheVerdict;
 };
 
+export type SavedAnalysis = {
+  id: string;
+  createdAt: string;
+  keyword: string;
+  marketplace: string;
+  verdict: NicheVerdict["verdict"];
+  headline: string;
+};
+
+const lines = (values: string[]) => values.join("\n");
+const fromLines = (value: string) => value.split("\n").filter(Boolean);
+
+function toVerdict(row: AnalysisRow): NicheVerdict {
+  const parsed = nicheVerdictSchema.shape.verdict.safeParse(row.verdict);
+  return {
+    verdict: parsed.success ? parsed.data : "competido",
+    headline: row.headline,
+    demand: row.demand,
+    competition: row.competition,
+    pricing: row.pricing,
+    newcomers: row.newcomers,
+    risks: fromLines(row.risks),
+    nextSteps: fromLines(row.nextSteps),
+  };
+}
+
+function toMarketProduct(row: ProductRow): MarketProduct {
+  return {
+    asin: row.asin,
+    title: row.title,
+    price: row.price,
+    currency: row.currency,
+    rating: row.rating,
+    votes: row.votes,
+    isAmazonChoice: row.isAmazonChoice,
+    isBestSeller: row.isBestSeller,
+    monthlySales: row.monthlySales,
+    organicPosition: row.organicPosition,
+    advertised: row.advertised,
+  };
+}
+
+function toResult(
+  analysis: AnalysisRow,
+  products: MarketProduct[],
+): ProductOpportunityResult {
+  return {
+    id: analysis.id,
+    createdAt: analysis.createdAt,
+    keyword: analysis.keyword,
+    marketplace: getAmazonMarketplace(
+      AMAZON_MARKETPLACE_CODES.find((code) => code === analysis.marketplace) ??
+        DEFAULT_AMAZON_MARKETPLACE_CODE,
+    ).code,
+    context: analysis.context,
+    summary: summarizeMarket(products),
+    products,
+    verdict: toVerdict(analysis),
+  };
+}
+
+export async function listSavedAnalyses(
+  projectId: string,
+): Promise<SavedAnalysis[]> {
+  const rows = await ProductOpportunityRepository.listAnalyses(projectId);
+  return rows.map((row) => ({
+    id: row.id,
+    createdAt: row.createdAt,
+    keyword: row.keyword,
+    marketplace: row.marketplace,
+    verdict: toVerdict(row).verdict,
+    headline: row.headline,
+  }));
+}
+
+export async function getSavedAnalysis(
+  projectId: string,
+  analysisId: string,
+): Promise<ProductOpportunityResult> {
+  const found = await ProductOpportunityRepository.getAnalysis(
+    projectId,
+    analysisId,
+  );
+  if (!found) throw new AppError("NOT_FOUND", "Ese análisis ya no existe.");
+  return toResult(found.analysis, found.products.map(toMarketProduct));
+}
+
+export async function deleteSavedAnalysis(projectId: string, analysisId: string) {
+  await ProductOpportunityRepository.deleteAnalysis(projectId, analysisId);
+}
+
 export async function analyzeProductOpportunity(input: {
   customer: BillingCustomerContext;
+  projectId: string;
   keyword: string;
   marketplace: AmazonMarketplace;
   context?: string;
@@ -184,11 +289,33 @@ export async function analyzeProductOpportunity(input: {
     ),
   );
 
-  return {
+  // Saved before returning: the customer has paid for this result, so it must
+  // survive a page change or a second analysis.
+  const analysis: AnalysisRow = {
+    id: crypto.randomUUID(),
+    projectId: input.projectId,
     keyword: input.keyword,
     marketplace: input.marketplace.code,
-    summary,
-    products,
-    verdict,
+    context: input.context ?? null,
+    verdict: verdict.verdict,
+    headline: verdict.headline,
+    demand: verdict.demand,
+    competition: verdict.competition,
+    pricing: verdict.pricing,
+    newcomers: verdict.newcomers,
+    risks: lines(verdict.risks),
+    nextSteps: lines(verdict.nextSteps),
+    createdAt: new Date().toISOString(),
   };
+  await ProductOpportunityRepository.insertAnalysis(
+    analysis,
+    products.map((product, index) => ({
+      ...product,
+      id: crypto.randomUUID(),
+      analysisId: analysis.id,
+      position: index + 1,
+    })),
+  );
+
+  return toResult(analysis, products);
 }

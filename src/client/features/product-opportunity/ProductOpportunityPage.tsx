@@ -1,7 +1,13 @@
 import { useState, type FormEvent } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { AlertCircle, Info, Lightbulb } from "lucide-react";
-import { analyzeNiche } from "@/serverFunctions/productOpportunity";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { AlertCircle, History, Info, Lightbulb, Trash2 } from "lucide-react";
+import {
+  analyzeNiche,
+  deleteNicheAnalysis,
+  getNicheAnalysis,
+  listNicheAnalyses,
+  type ProductOpportunityResult,
+} from "@/serverFunctions/productOpportunity";
 import { getStandardErrorMessage } from "@/client/lib/error-messages";
 import {
   AUTUMN_SEO_DATA_CREDITS_PER_USD,
@@ -63,10 +69,41 @@ export function ProductOpportunityPage({ projectId }: Props) {
   );
   const [context, setContext] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+  const historyKey = ["nicheAnalyses", projectId];
+  const detailKey = (id: string) => ["nicheAnalysis", projectId, id];
+
+  const history = useQuery({
+    queryKey: historyKey,
+    queryFn: () => listNicheAnalyses({ data: { projectId } }),
+  });
+
+  // A saved analysis never changes, so it is fetched once and kept.
+  const detail = useQuery({
+    queryKey: detailKey(selectedId ?? ""),
+    queryFn: () => getNicheAnalysis({ data: { projectId, analysisId: selectedId! } }),
+    enabled: selectedId !== null,
+    staleTime: Infinity,
+  });
 
   const analysis = useMutation({
     mutationFn: (data: { keyword: string; marketplace: AmazonMarketplaceCode; context: string }) =>
       analyzeNiche({ data: { projectId, ...data } }),
+    onSuccess: (saved: ProductOpportunityResult) => {
+      queryClient.setQueryData(detailKey(saved.id), saved);
+      setSelectedId(saved.id);
+      void queryClient.invalidateQueries({ queryKey: historyKey });
+    },
+  });
+
+  const remove = useMutation({
+    mutationFn: (analysisId: string) =>
+      deleteNicheAnalysis({ data: { projectId, analysisId } }),
+    onSuccess: (_, analysisId) => {
+      if (analysisId === selectedId) setSelectedId(null);
+      void queryClient.invalidateQueries({ queryKey: historyKey });
+    },
   });
 
   const submit = (event: FormEvent) => {
@@ -77,7 +114,7 @@ export function ProductOpportunityPage({ projectId }: Props) {
     analysis.mutate({ keyword: trimmed, marketplace, context: context.trim() });
   };
 
-  const result = analysis.data;
+  const result = selectedId ? detail.data : undefined;
   const verdict = result?.verdict;
   const summary = result?.summary;
   const domain = getAmazonMarketplace(result?.marketplace ?? marketplace).seDomain;
@@ -157,6 +194,55 @@ export function ProductOpportunityPage({ projectId }: Props) {
           {error ? <p className="text-sm text-error">{error}</p> : null}
         </form>
 
+        {(history.data ?? []).length > 0 ? (
+          <div className="rounded-xl border border-base-300 bg-base-100 p-4">
+            <h3 className="mb-2 flex items-center gap-2 text-sm font-semibold">
+              <History className="size-4" />
+              Análisis anteriores
+            </h3>
+            <ul className="divide-y divide-base-300">
+              {(history.data ?? []).map((item) => (
+                <li key={item.id} className="flex items-center gap-2 py-2">
+                  <button
+                    type="button"
+                    className={`flex flex-1 flex-wrap items-center gap-2 text-left text-sm hover:underline ${item.id === selectedId ? "font-semibold" : ""}`}
+                    onClick={() => setSelectedId(item.id)}
+                  >
+                    <span className={`badge badge-sm ${VERDICT_STYLE[item.verdict].className}`}>
+                      {item.verdict}
+                    </span>
+                    <span>{item.keyword}</span>
+                    <span className="text-base-content/50">
+                      {item.marketplace} ·{" "}
+                      {new Date(item.createdAt).toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "2-digit" })}
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-xs"
+                    aria-label={`Borrar el análisis de ${item.keyword}`}
+                    disabled={remove.isPending}
+                    onClick={() => {
+                      if (window.confirm(`¿Borrar el análisis de «${item.keyword}»? No se puede deshacer.`)) {
+                        remove.mutate(item.id);
+                      }
+                    }}
+                  >
+                    <Trash2 className="size-4" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-1 text-xs text-base-content/50">
+              Se guardan solos. Abrir uno anterior no cuesta créditos.
+            </p>
+          </div>
+        ) : null}
+
+        {detail.isPending && selectedId ? (
+          <p className="text-sm text-base-content/60">Cargando el análisis…</p>
+        ) : null}
+
         {analysis.isError ? (
           <div role="alert" className="flex items-start gap-2 rounded-lg border border-error/30 bg-error/10 p-3 text-sm text-error">
             <AlertCircle className="mt-0.5 size-4 shrink-0" />
@@ -167,6 +253,10 @@ export function ProductOpportunityPage({ projectId }: Props) {
         {verdict && summary && result ? (
           <div className="space-y-4">
             <div className="space-y-3 rounded-xl border border-base-300 bg-base-100 p-4">
+              <p className="text-sm text-base-content/60">
+                «{result.keyword}» en {getAmazonMarketplace(result.marketplace).label} ·{" "}
+                {new Date(result.createdAt).toLocaleString("es-ES", { dateStyle: "medium", timeStyle: "short" })}
+              </p>
               <span className={`badge ${VERDICT_STYLE[verdict.verdict].className}`}>
                 {VERDICT_STYLE[verdict.verdict].label}
               </span>
