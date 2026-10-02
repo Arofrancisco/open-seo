@@ -294,6 +294,85 @@ const amazonSerpItemSchema = z
   })
   .passthrough();
 
+// ---------------------------------------------------------------------------
+// Amazon market scan (Products endpoint, live) — every product shown for a
+// keyword with Amazon's "bought in the past month" figure. One synchronous,
+// billed call; used to size a niche, not to rank one ASIN.
+// ---------------------------------------------------------------------------
+
+// The live endpoint answered in ~50s in testing, close to the default 60s
+// budget, so it gets its own. A timeout after the charge must not be retried.
+const AMAZON_LIVE_TIMEOUT_MS = 150_000;
+
+const amazonMarketItemSchema = amazonSerpItemSchema.extend({
+  bought_past_month: nullableNumber,
+  labels: z.array(z.unknown()).nullable().optional(),
+});
+
+export type AmazonMarketItem = {
+  asin: string;
+  title: string | null;
+  price: number | null;
+  currency: string | null;
+  rating: number | null;
+  votes: number | null;
+  /** Raw figure as DataForSEO returns it; see normalizeBoughtPastMonth. */
+  boughtPastMonth: number | null;
+  sponsored: boolean;
+  /** Books, ebooks and stationery carry format labels; products don't. */
+  hasFormatLabels: boolean;
+  isAmazonChoice: boolean;
+  isBestSeller: boolean;
+};
+
+export async function fetchAmazonProductsLive(input: {
+  keyword: string;
+  locationCode: number;
+  languageCode: string;
+  seDomain: string;
+}): Promise<DataforseoApiResponse<AmazonMarketItem[]>> {
+  const response = await dataforseoPost<DataforseoItemsTask<unknown>>(
+    "/v3/merchant/amazon/products/live/advanced",
+    [
+      {
+        keyword: input.keyword,
+        location_code: input.locationCode,
+        language_code: input.languageCode,
+        se_domain: input.seDomain,
+        depth: AMAZON_SERP_DEPTH,
+      },
+    ],
+    { ...NO_RETRY, signal: AbortSignal.timeout(AMAZON_LIVE_TIMEOUT_MS) },
+  );
+  const task = assertOk(response, { treatNoResultsAsEmpty: true });
+  const first = task.result?.[0];
+  const rawItems = Array.isArray(first?.items) ? first.items : [];
+
+  const items = rawItems.flatMap((raw): AmazonMarketItem[] => {
+    const parsed = amazonMarketItemSchema.safeParse(raw);
+    if (!parsed.success) return [];
+    const item = parsed.data;
+    if (item.type !== "amazon_serp" && item.type !== "amazon_paid") return [];
+    if (!item.data_asin) return [];
+    return [
+      {
+        asin: item.data_asin.toUpperCase(),
+        title: item.title ?? null,
+        price: item.price_from ?? null,
+        currency: item.currency ?? null,
+        rating: item.rating?.value ?? null,
+        votes: item.rating?.votes_count ?? null,
+        boughtPastMonth: item.bought_past_month ?? null,
+        sponsored: item.type === "amazon_paid",
+        hasFormatLabels: (item.labels?.length ?? 0) > 0,
+        isAmazonChoice: Boolean(item.is_amazon_choice),
+        isBestSeller: Boolean(item.is_best_seller),
+      },
+    ];
+  });
+  return { data: items, billing: buildTaskBilling(task) };
+}
+
 const AMAZON_TOP_RESULTS = 5;
 
 export type AmazonTopResult = {

@@ -6,6 +6,7 @@ import {
   FileText,
   Globe,
   LayoutDashboard,
+  Lightbulb,
   ListOrdered,
   Link2,
   MessageSquare,
@@ -88,6 +89,11 @@ const projectNavItems = [
     icon: ScanSearch,
   },
   {
+    to: "/p/$projectId/product-opportunity" as const,
+    label: "¿Qué producto lanzo? (beta)",
+    icon: Lightbulb,
+  },
+  {
     to: "/p/$projectId/prompt-explorer" as const,
     label: "Prompt Explorer",
     icon: MessageSquare,
@@ -151,6 +157,7 @@ export function getProjectNavGroups(projectId: string) {
         byPath("/p/$projectId/ai-visibility"),
         byPath("/p/$projectId/google-trends"),
         byPath("/p/$projectId/amazon-reverse-asin"),
+        byPath("/p/$projectId/product-opportunity"),
         byPath("/p/$projectId/prompt-explorer"),
       ],
     },

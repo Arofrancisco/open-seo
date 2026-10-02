@@ -54,6 +54,7 @@ import { Route as ProjectPProjectIdRankTrackingRouteImport } from './routes/_pro
 import { Route as ProjectPProjectIdPromptExplorerRouteImport } from './routes/_project/p/$projectId/prompt-explorer'
 import { Route as ProjectPProjectIdKeywordsRouteImport } from './routes/_project/p/$projectId/keywords'
 import { Route as ProjectPProjectIdGoogleTrendsRouteImport } from './routes/_project/p/$projectId/google-trends'
+import { Route as ProjectPProjectIdProductOpportunityRouteImport } from './routes/_project/p/$projectId/product-opportunity'
 import { Route as ProjectPProjectIdDomainRouteImport } from './routes/_project/p/$projectId/domain'
 import { Route as ProjectPProjectIdContextRouteImport } from './routes/_project/p/$projectId/context'
 import { Route as ProjectPProjectIdBrandLookupRouteImport } from './routes/_project/p/$projectId/brand-lookup'
@@ -303,6 +304,12 @@ const ProjectPProjectIdGoogleTrendsRoute =
     path: '/google-trends',
     getParentRoute: () => ProjectPProjectIdRouteRoute,
   } as any)
+const ProjectPProjectIdProductOpportunityRoute =
+  ProjectPProjectIdProductOpportunityRouteImport.update({
+    id: '/product-opportunity',
+    path: '/product-opportunity',
+    getParentRoute: () => ProjectPProjectIdRouteRoute,
+  } as any)
 const ProjectPProjectIdDomainRoute = ProjectPProjectIdDomainRouteImport.update({
   id: '/domain',
   path: '/domain',
@@ -450,6 +457,7 @@ export interface FileRoutesByFullPath {
   '/p/$projectId/context': typeof ProjectPProjectIdContextRoute
   '/p/$projectId/domain': typeof ProjectPProjectIdDomainRoute
   '/p/$projectId/google-trends': typeof ProjectPProjectIdGoogleTrendsRoute
+  '/p/$projectId/product-opportunity': typeof ProjectPProjectIdProductOpportunityRoute
   '/p/$projectId/keywords': typeof ProjectPProjectIdKeywordsRoute
   '/p/$projectId/prompt-explorer': typeof ProjectPProjectIdPromptExplorerRoute
   '/p/$projectId/rank-tracking': typeof ProjectPProjectIdRankTrackingRouteWithChildren
@@ -508,6 +516,7 @@ export interface FileRoutesByTo {
   '/p/$projectId/context': typeof ProjectPProjectIdContextRoute
   '/p/$projectId/domain': typeof ProjectPProjectIdDomainRoute
   '/p/$projectId/google-trends': typeof ProjectPProjectIdGoogleTrendsRoute
+  '/p/$projectId/product-opportunity': typeof ProjectPProjectIdProductOpportunityRoute
   '/p/$projectId/keywords': typeof ProjectPProjectIdKeywordsRoute
   '/p/$projectId/prompt-explorer': typeof ProjectPProjectIdPromptExplorerRoute
   '/p/$projectId/sam': typeof ProjectPProjectIdSamRoute
@@ -572,6 +581,7 @@ export interface FileRoutesById {
   '/_project/p/$projectId/context': typeof ProjectPProjectIdContextRoute
   '/_project/p/$projectId/domain': typeof ProjectPProjectIdDomainRoute
   '/_project/p/$projectId/google-trends': typeof ProjectPProjectIdGoogleTrendsRoute
+  '/_project/p/$projectId/product-opportunity': typeof ProjectPProjectIdProductOpportunityRoute
   '/_project/p/$projectId/keywords': typeof ProjectPProjectIdKeywordsRoute
   '/_project/p/$projectId/prompt-explorer': typeof ProjectPProjectIdPromptExplorerRoute
   '/_project/p/$projectId/rank-tracking': typeof ProjectPProjectIdRankTrackingRouteWithChildren
@@ -635,6 +645,7 @@ export interface FileRouteTypes {
     | '/p/$projectId/context'
     | '/p/$projectId/domain'
     | '/p/$projectId/google-trends'
+    | '/p/$projectId/product-opportunity'
     | '/p/$projectId/keywords'
     | '/p/$projectId/prompt-explorer'
     | '/p/$projectId/rank-tracking'
@@ -693,6 +704,7 @@ export interface FileRouteTypes {
     | '/p/$projectId/context'
     | '/p/$projectId/domain'
     | '/p/$projectId/google-trends'
+    | '/p/$projectId/product-opportunity'
     | '/p/$projectId/keywords'
     | '/p/$projectId/prompt-explorer'
     | '/p/$projectId/sam'
@@ -756,6 +768,7 @@ export interface FileRouteTypes {
     | '/_project/p/$projectId/context'
     | '/_project/p/$projectId/domain'
     | '/_project/p/$projectId/google-trends'
+    | '/_project/p/$projectId/product-opportunity'
     | '/_project/p/$projectId/keywords'
     | '/_project/p/$projectId/prompt-explorer'
     | '/_project/p/$projectId/rank-tracking'
@@ -1117,6 +1130,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProjectPProjectIdGoogleTrendsRouteImport
       parentRoute: typeof ProjectPProjectIdRouteRoute
     }
+    '/_project/p/$projectId/product-opportunity': {
+      id: '/_project/p/$projectId/product-opportunity'
+      path: '/product-opportunity'
+      fullPath: '/p/$projectId/product-opportunity'
+      preLoaderRoute: typeof ProjectPProjectIdProductOpportunityRouteImport
+      parentRoute: typeof ProjectPProjectIdRouteRoute
+    }
     '/_project/p/$projectId/domain': {
       id: '/_project/p/$projectId/domain'
       path: '/domain'
@@ -1353,6 +1373,7 @@ interface ProjectPProjectIdRouteRouteChildren {
   ProjectPProjectIdContextRoute: typeof ProjectPProjectIdContextRoute
   ProjectPProjectIdDomainRoute: typeof ProjectPProjectIdDomainRoute
   ProjectPProjectIdGoogleTrendsRoute: typeof ProjectPProjectIdGoogleTrendsRoute
+  ProjectPProjectIdProductOpportunityRoute: typeof ProjectPProjectIdProductOpportunityRoute
   ProjectPProjectIdKeywordsRoute: typeof ProjectPProjectIdKeywordsRoute
   ProjectPProjectIdPromptExplorerRoute: typeof ProjectPProjectIdPromptExplorerRoute
   ProjectPProjectIdRankTrackingRoute: typeof ProjectPProjectIdRankTrackingRouteWithChildren
@@ -1378,6 +1399,8 @@ const ProjectPProjectIdRouteRouteChildren: ProjectPProjectIdRouteRouteChildren =
     ProjectPProjectIdContextRoute: ProjectPProjectIdContextRoute,
     ProjectPProjectIdDomainRoute: ProjectPProjectIdDomainRoute,
     ProjectPProjectIdGoogleTrendsRoute: ProjectPProjectIdGoogleTrendsRoute,
+    ProjectPProjectIdProductOpportunityRoute:
+      ProjectPProjectIdProductOpportunityRoute,
     ProjectPProjectIdKeywordsRoute: ProjectPProjectIdKeywordsRoute,
     ProjectPProjectIdPromptExplorerRoute: ProjectPProjectIdPromptExplorerRoute,
     ProjectPProjectIdRankTrackingRoute:
