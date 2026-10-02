@@ -79,7 +79,22 @@ export type TrendsPoint = {
   from: string;
   /** One value per keyword, in request order; null when Google has no data. */
   values: (number | null)[];
+  /** ISO date of the end of the period, when the provider sends it. */
+  to?: string;
 };
+
+/**
+ * Google Trends returns the period in progress as if it were complete, so the
+ * last point looks like a sudden drop. Splits it off when it has not ended yet.
+ */
+export function dropIncompletePeriod(
+  points: TrendsPoint[],
+  today: string = new Date().toISOString().slice(0, 10),
+): { points: TrendsPoint[]; dropped: TrendsPoint | null } {
+  const last = points[points.length - 1];
+  if (!last?.to || last.to < today) return { points, dropped: null };
+  return { points: points.slice(0, -1), dropped: last };
+}
 
 export type KeywordSummary = {
   keyword: string;

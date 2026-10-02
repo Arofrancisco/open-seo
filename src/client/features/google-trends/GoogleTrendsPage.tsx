@@ -9,6 +9,7 @@ import {
 } from "@/shared/billing";
 import {
   bestMonths,
+  dropIncompletePeriod,
   isValidTrendsKeyword,
   monthlySeasonality,
   summarizeKeywords,
@@ -86,7 +87,7 @@ export function GoogleTrendsPage({ projectId }: Props) {
     setParams({ keywords, locationCode, source, range });
   };
 
-  const points = graph.data?.points ?? [];
+  const { points, dropped: inProgress } = dropIncompletePeriod(graph.data?.points ?? []);
   const summary = params ? summarizeKeywords(params.keywords, points) : [];
   const firstDate = points[0]?.from;
   const lastDate = points[points.length - 1]?.from;
@@ -205,6 +206,7 @@ export function GoogleTrendsPage({ projectId }: Props) {
               {firstDate && lastDate ? (
                 <p className="text-xs text-base-content/50">
                   {points.length} puntos de datos, de {formatTrendDate(firstDate)} a {formatTrendDate(lastDate)}.
+                  {inProgress ? ` Se omite el periodo en curso (desde el ${formatTrendDate(inProgress.from, true)}): aún no ha terminado y Google lo muestra incompleto, como una caída que no es real.` : ""}
                 </p>
               ) : null}
               <div className="overflow-x-auto">

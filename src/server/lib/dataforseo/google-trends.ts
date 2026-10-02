@@ -49,6 +49,7 @@ const resultSchema = z
 const graphPointSchema = z
   .object({
     date_from: z.string(),
+    date_to: z.string().nullable().optional(),
     values: valuesSchema.nullable().optional(),
     missing_data: z.boolean().nullable().optional(),
   })
@@ -126,7 +127,11 @@ export async function fetchGoogleTrends(
       if (rows.success) {
         empty.points = rows.data
           .filter((row) => row.missing_data !== true)
-          .map((row) => ({ from: row.date_from, values: row.values ?? [] }));
+          .map((row) => ({
+            from: row.date_from,
+            to: row.date_to || undefined,
+            values: row.values ?? [],
+          }));
       }
     } else if (item.type === ITEM_TYPE.map) {
       const rows = z.array(mapPointSchema).safeParse(item.data);

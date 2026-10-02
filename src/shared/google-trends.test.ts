@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   bestMonths,
+  dropIncompletePeriod,
   isValidTrendsKeyword,
   monthlySeasonality,
   summarizeKeywords,
@@ -11,6 +12,24 @@ import {
 const point = (from: string, ...values: (number | null)[]): TrendsPoint => ({
   from,
   values,
+});
+
+describe("dropIncompletePeriod", () => {
+  const p = (from: string, to?: string): TrendsPoint => ({ from, to, values: [50] });
+
+  it("drops the last point while its period has not ended", () => {
+    const result = dropIncompletePeriod(
+      [p("2026-09-20", "2026-09-26"), p("2026-09-27", "2026-10-03")],
+      "2026-10-02",
+    );
+    expect(result.points).toHaveLength(1);
+    expect(result.dropped?.from).toBe("2026-09-27");
+  });
+
+  it("keeps everything when the last period is over or has no end date", () => {
+    expect(dropIncompletePeriod([p("2026-09-20", "2026-09-26")], "2026-10-02").dropped).toBeNull();
+    expect(dropIncompletePeriod([p("2026-09-27")], "2026-10-02").dropped).toBeNull();
+  });
 });
 
 describe("isValidTrendsKeyword", () => {
