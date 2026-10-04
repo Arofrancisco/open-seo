@@ -56,6 +56,11 @@ export const productOpportunityProducts = sqliteTable(
     rating: real("rating"),
     votes: integer("votes"),
     monthlySales: integer("monthly_sales"),
+    // See MarketProduct in shared/product-opportunity.ts.
+    salesUnconfirmed: integer("sales_unconfirmed", { mode: "boolean" })
+      .notNull()
+      .default(false),
+    offNiche: integer("off_niche", { mode: "boolean" }).notNull().default(false),
     organicPosition: integer("organic_position"),
     advertised: integer("advertised", { mode: "boolean" }).notNull(),
     isAmazonChoice: integer("is_amazon_choice", { mode: "boolean" }).notNull(),

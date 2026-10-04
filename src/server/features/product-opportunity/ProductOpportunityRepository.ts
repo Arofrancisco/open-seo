@@ -13,9 +13,9 @@ type ProductInsert = typeof productOpportunityProducts.$inferInsert;
 // Plenty to compare niches over months; older analyses stay stored, just unlisted.
 const LISTED_ANALYSES = 50;
 
-// Each product row binds 14 parameters; keep every statement under the
+// Each product row binds 16 parameters; keep every statement under the
 // per-statement parameter cap.
-const PRODUCT_COLUMNS = 14;
+const PRODUCT_COLUMNS = 16;
 const ROWS_PER_INSERT = Math.max(1, Math.floor(DB_BATCH_SIZE / PRODUCT_COLUMNS));
 
 async function insertAnalysis(

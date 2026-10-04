@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   cleanMarketProducts,
+  markOffNiche,
   normalizeBoughtPastMonth,
   summarizeMarket,
   type MarketProductInput,
@@ -22,16 +23,11 @@ const item = (overrides: Partial<MarketProductInput>): MarketProductInput => ({
 });
 
 describe("normalizeBoughtPastMonth", () => {
-  it("reads a small round figure on a reviewed listing as thousands", () => {
-    // Amazon shows "3 mil+ comprados" and DataForSEO returns 3.
-    expect(normalizeBoughtPastMonth(3, 1200)).toBe(3000);
-    expect(normalizeBoughtPastMonth(600, 694)).toBe(600);
-  });
-
-  it("leaves numbers lifted from the title unknown", () => {
-    // "18 MLD probióticos" in the title, no sales badge on the listing.
-    expect(normalizeBoughtPastMonth(18, 151)).toBeNull();
-    expect(normalizeBoughtPastMonth(2, 1)).toBeNull();
+  it("never turns a small figure into thousands, only flags it", () => {
+    // "3 mil+" and a title's "Para 10 Meses" both arrive as single digits.
+    expect(normalizeBoughtPastMonth(10)).toEqual({ monthlySales: null, salesUnconfirmed: true });
+    expect(normalizeBoughtPastMonth(600)).toEqual({ monthlySales: 600, salesUnconfirmed: false });
+    expect(normalizeBoughtPastMonth(18)).toEqual({ monthlySales: null, salesUnconfirmed: false });
   });
 });
 
@@ -50,21 +46,20 @@ describe("cleanMarketProducts", () => {
 });
 
 describe("summarizeMarket", () => {
-  it("sizes the niche and flags low-review listings that already sell", () => {
-    const summary = summarizeMarket(
+  it("leaves off-niche and unconfirmed products out of every figure", () => {
+    const products = markOffNiche(
       cleanMarketProducts([
-        item({ asin: "LEADER", boughtPastMonth: 3, votes: 1200 }),
+        item({ asin: "TURMERIC", boughtPastMonth: 6000 }),
+        item({ asin: "MAYBE", boughtPastMonth: 3 }),
         item({ asin: "NEW", boughtPastMonth: 900, votes: 20 }),
-        item({ asin: "SMALL", boughtPastMonth: 50, votes: 40 }),
-        item({ asin: "UNKNOWN", boughtPastMonth: null }),
+        item({ asin: "SMALL", boughtPastMonth: 100, votes: 40 }),
       ]),
+      ["turmeric"],
     );
-    expect(summary).toMatchObject({
-      products: 4,
-      withSalesData: 3,
-      monthlySalesFloor: 3950,
-    });
+    const summary = summarizeMarket(products);
+    expect(summary).toMatchObject({ products: 3, withSalesData: 2, monthlySalesFloor: 1000 });
     expect(summary.newcomers.map((p) => p.asin)).toEqual(["NEW"]);
-    expect(summary.top3Share).toBe(1);
+    expect(summary.unconfirmed.map((p) => p.asin)).toEqual(["MAYBE"]);
+    expect(summary.offNiche.map((p) => p.asin)).toEqual(["TURMERIC"]);
   });
 });

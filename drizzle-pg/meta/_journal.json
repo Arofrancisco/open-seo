@@ -225,6 +225,13 @@
       "when": 1790978184528,
       "tag": "0031_unusual_wrecker",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1791148731174,
+      "tag": "0032_product_opportunity_flags",
+      "breakpoints": true
     }
   ]
 }

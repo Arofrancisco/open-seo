@@ -1,0 +1,2 @@
+ALTER TABLE "product_opportunity_products" ADD COLUMN "sales_unconfirmed" boolean DEFAULT false NOT NULL;--> statement-breakpoint
+ALTER TABLE "product_opportunity_products" ADD COLUMN "off_niche" boolean DEFAULT false NOT NULL;

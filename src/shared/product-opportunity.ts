@@ -25,37 +25,46 @@ export type MarketProduct = Omit<
   MarketProductInput,
   "boughtPastMonth" | "sponsored" | "hasFormatLabels"
 > & {
-  /** Monthly units after fixing the "thousands" figure; null when unknown. */
+  /** Monthly units from Amazon's badge; null when unknown or unconfirmed. */
   monthlySales: number | null;
+  /**
+   * The raw figure was 1-10: either "N mil" read as N, or a number lifted from
+   * the title. It may mean thousands, so it is flagged instead of counted.
+   */
+  salesUnconfirmed: boolean;
+  /** The model judged it outside the niche; kept but left out of every figure. */
+  offNiche: boolean;
   /** 1-based position among organic results; null when only seen as an ad. */
   organicPosition: number | null;
   advertised: boolean;
 };
 
 // Amazon only shows "bought in the past month" from 50 upwards, so a smaller
-// figure is either "N mil" read as N, or a number lifted from the title
-// (e.g. "18 MLD probióticos" read as 18). Only round thousands on a listing
-// with real review volume are trusted as thousands; the rest stay unknown.
+// figure is never a real count. 1-10 is ambiguous: "3 mil+" arrives as 3, but
+// so does a number from the title ("Para 10 Meses" arrived as 10 on a listing
+// with no badge and ~11 sales). Neither can be told apart from this data, so
+// those are flagged as unconfirmed rather than guessed.
 const MIN_SHOWN_BY_AMAZON = 50;
 const MAX_THOUSANDS_FIGURE = 10;
-const MIN_VOTES_FOR_THOUSANDS = 100;
 
-export function normalizeBoughtPastMonth(
-  bought: number | null,
-  votes: number | null,
-): number | null {
-  if (bought === null || bought <= 0) return null;
-  if (bought >= MIN_SHOWN_BY_AMAZON) return bought;
-  const looksLikeThousands =
-    Number.isInteger(bought) &&
-    bought <= MAX_THOUSANDS_FIGURE &&
-    (votes ?? 0) >= MIN_VOTES_FOR_THOUSANDS;
-  return looksLikeThousands ? bought * 1000 : null;
+export function normalizeBoughtPastMonth(bought: number | null): {
+  monthlySales: number | null;
+  salesUnconfirmed: boolean;
+} {
+  if (bought === null || bought <= 0) {
+    return { monthlySales: null, salesUnconfirmed: false };
+  }
+  if (bought >= MIN_SHOWN_BY_AMAZON) {
+    return { monthlySales: bought, salesUnconfirmed: false };
+  }
+  const maybeThousands =
+    Number.isInteger(bought) && bought <= MAX_THOUSANDS_FIGURE;
+  return { monthlySales: null, salesUnconfirmed: maybeThousands };
 }
 
 /**
  * Drops books and other formatted media, merges an ASIN seen both as an ad and
- * organically, and fixes the sales figure. Keeps Amazon's order.
+ * organically, and reads the sales figure. Keeps Amazon's order.
  */
 export function cleanMarketProducts(
   items: MarketProductInput[],
@@ -81,12 +90,25 @@ export function cleanMarketProducts(
       votes: item.votes,
       isAmazonChoice: item.isAmazonChoice,
       isBestSeller: item.isBestSeller,
-      monthlySales: normalizeBoughtPastMonth(item.boughtPastMonth, item.votes),
+      ...normalizeBoughtPastMonth(item.boughtPastMonth),
+      offNiche: false,
       organicPosition,
       advertised: item.sponsored,
     });
   }
   return [...byAsin.values()];
+}
+
+/** Flags the products the model judged outside the niche. */
+export function markOffNiche(
+  products: MarketProduct[],
+  offNicheAsins: string[],
+): MarketProduct[] {
+  const off = new Set(offNicheAsins.map((asin) => asin.toUpperCase()));
+  return products.map((product) => ({
+    ...product,
+    offNiche: off.has(product.asin),
+  }));
 }
 
 // A listing that already sells well with few reviews is the clearest sign a
@@ -96,6 +118,7 @@ const NEWCOMER_MIN_SALES = 200;
 const TOP_SELLERS = 10;
 
 export type MarketSummary = {
+  /** In-niche products only. */
   products: number;
   withSalesData: number;
   /** Sum of known monthly sales: a floor, since Amazon rounds down. */
@@ -106,6 +129,8 @@ export type MarketSummary = {
   top3Share: number | null;
   topSellers: MarketProduct[];
   newcomers: MarketProduct[];
+  unconfirmed: MarketProduct[];
+  offNiche: MarketProduct[];
 };
 
 function median(values: number[]): number | null {
@@ -152,7 +177,13 @@ export const nicheVerdictSchema = z.object({
 
 export type NicheVerdict = z.infer<typeof nicheVerdictSchema>;
 
-export function summarizeMarket(products: MarketProduct[]): MarketSummary {
+/** What the model returns: the verdict plus the ASINs it left out. */
+export const nicheAnalysisSchema = nicheVerdictSchema.extend({
+  offNicheAsins: z.array(z.string()),
+});
+
+export function summarizeMarket(all: MarketProduct[]): MarketSummary {
+  const products = all.filter((product) => !product.offNiche);
   const selling = products
     .filter((product) => product.monthlySales !== null)
     .sort((a, b) => (b.monthlySales ?? 0) - (a.monthlySales ?? 0));
@@ -178,5 +209,7 @@ export function summarizeMarket(products: MarketProduct[]): MarketSummary {
         (p.votes ?? 0) < NEWCOMER_MAX_VOTES &&
         (p.monthlySales ?? 0) >= NEWCOMER_MIN_SALES,
     ),
+    unconfirmed: products.filter((p) => p.salesUnconfirmed),
+    offNiche: all.filter((p) => p.offNiche),
   };
 }

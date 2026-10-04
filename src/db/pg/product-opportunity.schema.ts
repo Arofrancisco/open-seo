@@ -57,6 +57,8 @@ export const productOpportunityProducts = pgTable(
     rating: doublePrecision("rating"),
     votes: integer("votes"),
     monthlySales: integer("monthly_sales"),
+    salesUnconfirmed: boolean("sales_unconfirmed").notNull().default(false),
+    offNiche: boolean("off_niche").notNull().default(false),
     organicPosition: integer("organic_position"),
     advertised: boolean("advertised").notNull(),
     isAmazonChoice: boolean("is_amazon_choice").notNull(),

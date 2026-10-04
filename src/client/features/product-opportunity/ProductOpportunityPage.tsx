@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { AlertCircle, History, Info, Lightbulb, Trash2 } from "lucide-react";
+import { AlertCircle, Download, History, Info, Lightbulb, Trash2 } from "lucide-react";
+import { downloadProductOpportunity } from "@/client/features/product-opportunity/productOpportunityExport";
 import {
   analyzeNiche,
   deleteNicheAnalysis,
@@ -54,7 +55,15 @@ function ProductRow({ product, domain }: { product: MarketProduct; domain: strin
           {product.title ?? product.asin}
         </a>
       </td>
-      <td>{formatNumber(product.monthlySales)}</td>
+      <td>
+        {product.salesUnconfirmed ? (
+          <span className="badge badge-warning badge-sm" title="Puede ser «mil+» o un número del título">
+            ¿1.000+?
+          </span>
+        ) : (
+          formatNumber(product.monthlySales)
+        )}
+      </td>
       <td>{formatPrice(product.price)}</td>
       <td>{formatNumber(product.votes)}</td>
       <td>{product.rating ?? "—"}</td>
@@ -155,7 +164,7 @@ export function ProductOpportunityPage({ projectId }: Props) {
               Nicho o producto
               <input
                 className="input input-bordered w-full"
-                placeholder="menopausia, cápsulas bronceadoras, colágeno…"
+                placeholder="termo de acero, comedero para gatos, esterilla de yoga…"
                 value={keyword}
                 onChange={(event) => setKeyword(event.target.value)}
               />
@@ -183,7 +192,7 @@ export function ProductOpportunityPage({ projectId }: Props) {
             <textarea
               className="textarea textarea-bordered w-full"
               rows={2}
-              placeholder="Marca de nutricosmética femenina, precio medio 26 €, ya fabrica con probióticos y ashwagandha."
+              placeholder="Marca de accesorios de cocina, precio medio 20 €, ya fabrica en acero inoxidable y bambú."
               value={context}
               onChange={(event) => setContext(event.target.value)}
             />
@@ -253,10 +262,20 @@ export function ProductOpportunityPage({ projectId }: Props) {
         {verdict && summary && result ? (
           <div className="space-y-4">
             <div className="space-y-3 rounded-xl border border-base-300 bg-base-100 p-4">
-              <p className="text-sm text-base-content/60">
-                «{result.keyword}» en {getAmazonMarketplace(result.marketplace).label} ·{" "}
-                {new Date(result.createdAt).toLocaleString("es-ES", { dateStyle: "medium", timeStyle: "short" })}
-              </p>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-sm text-base-content/60">
+                  «{result.keyword}» en {getAmazonMarketplace(result.marketplace).label} ·{" "}
+                  {new Date(result.createdAt).toLocaleString("es-ES", { dateStyle: "medium", timeStyle: "short" })}
+                </p>
+                <div className="flex gap-2">
+                  <button type="button" className="btn btn-outline btn-xs" onClick={() => downloadProductOpportunity(result, "csv")}>
+                    <Download className="size-3" /> CSV (Excel)
+                  </button>
+                  <button type="button" className="btn btn-outline btn-xs" onClick={() => downloadProductOpportunity(result, "json")}>
+                    <Download className="size-3" /> JSON
+                  </button>
+                </div>
+              </div>
               <span className={`badge ${VERDICT_STYLE[verdict.verdict].className}`}>
                 {VERDICT_STYLE[verdict.verdict].label}
               </span>
@@ -329,10 +348,46 @@ export function ProductOpportunityPage({ projectId }: Props) {
                 </table>
               </div>
               <p className="mt-2 text-xs text-base-content/50">
-                {summary.products} productos analizados, {summary.withSalesData} con dato de ventas.
-                Sin libros ni ebooks.
+                {summary.products} productos del nicho, {summary.withSalesData} con dato de ventas. Sin libros
+                ni ebooks
+                {summary.offNiche.length > 0 ? `, ni ${summary.offNiche.length} productos que no son del nicho` : ""}.
               </p>
             </div>
+
+            {summary.unconfirmed.length > 0 ? (
+              <div className="rounded-xl border border-warning/40 bg-warning/5 p-4">
+                <h3 className="mb-1 text-sm font-semibold">Ventas sin confirmar</h3>
+                <p className="mb-2 text-xs text-base-content/70">
+                  Para estos productos el dato llegó como un número del 1 al 10. Puede ser «mil+» de Amazon
+                  (por ejemplo «3 mil+ comprados») o un número sacado del título, y no se pueden distinguir.
+                  No cuentan en las cifras de arriba: si te interesa alguno, mira su ficha en Amazon.
+                </p>
+                <div className="overflow-x-auto">
+                  <table className="table table-sm">
+                    <thead><tr><th>Producto</th><th>Ventas/mes</th><th>Precio</th><th>Reseñas</th><th>★</th></tr></thead>
+                    <tbody>{summary.unconfirmed.map((p) => <ProductRow key={p.asin} product={p} domain={domain} />)}</tbody>
+                  </table>
+                </div>
+              </div>
+            ) : null}
+
+            {summary.offNiche.length > 0 ? (
+              <details className="rounded-xl border border-base-300 bg-base-100 p-4">
+                <summary className="cursor-pointer text-sm font-semibold">
+                  Excluidos por no ser del nicho ({summary.offNiche.length})
+                </summary>
+                <p className="my-2 text-xs text-base-content/70">
+                  Amazon los muestra en esta búsqueda, pero el análisis los ha apartado porque no responden a
+                  ella. No cuentan en ninguna cifra.
+                </p>
+                <div className="overflow-x-auto">
+                  <table className="table table-sm">
+                    <thead><tr><th>Producto</th><th>Ventas/mes</th><th>Precio</th><th>Reseñas</th><th>★</th></tr></thead>
+                    <tbody>{summary.offNiche.map((p) => <ProductRow key={p.asin} product={p} domain={domain} />)}</tbody>
+                  </table>
+                </div>
+              </details>
+            ) : null}
           </div>
         ) : null}
       </div>

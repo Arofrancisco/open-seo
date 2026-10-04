@@ -27,6 +27,8 @@ import {
 import {
   claudeCostUsd,
   cleanMarketProducts,
+  markOffNiche,
+  nicheAnalysisSchema,
   nicheVerdictSchema,
   summarizeMarket,
   type MarketProduct,
@@ -39,36 +41,41 @@ import {
 const DEFAULT_MODEL = "claude-sonnet-5-5";
 
 // Only what the model needs to judge the niche; the full list stays on the page.
-const PRODUCTS_FOR_MODEL = 40;
+const PRODUCTS_FOR_MODEL = 60;
 
 const SYSTEM_PROMPT = `Eres un analista de producto de Amazon que asesora a marcas pequeñas y medianas de Europa sobre qué lanzar.
 
-Recibes los productos que Amazon muestra para una búsqueda en un mercado concreto, con las ventas del último mes según la etiqueta pública de Amazon ("X comprados el mes pasado"), precio y reseñas, más un resumen calculado. Decide si el nicho está abierto, competido o cerrado para una marca nueva.
+Recibes los productos que Amazon muestra para una búsqueda en un mercado concreto: título, precio, reseñas y las ventas del último mes según la etiqueta pública de Amazon ("X comprados el mes pasado"). Decide si el nicho está abierto, competido o cerrado para una marca nueva.
+
+Primero, separa lo que no es del nicho. Amazon mezcla en los resultados productos que no responden a la búsqueda (otra categoría, otro uso, un ingrediente suelto que no es el producto buscado, accesorios). Devuelve sus ASIN en "offNicheAsins" y no los uses al razonar. La página calculará las cifras totales (ventas, precio mediano, cuota del top 3) solo con los que quedan, así que no sumes ni cites totales del nicho: interpreta.
 
 Cómo leer los datos:
-- Las ventas son mínimos por tramos (Amazon muestra 50+, 100+, 1 mil+...), no cifras exactas. Úsalas para comparar, no para planificar stock. Un producto sin dato puede vender menos de 50 o simplemente no mostrarlo.
-- La señal más útil de que un nicho está abierto son los "recién llegados": productos con pocas reseñas que ya venden bien. Si los líderes tienen miles de reseñas y nadie nuevo vende, el nicho está cerrado.
+- Las ventas son mínimos por tramos (Amazon muestra 50+, 100+...), no cifras exactas. Úsalas para comparar, no para planificar stock. Sin dato puede significar menos de 50 o que Amazon no lo muestra.
+- "ventasSinConfirmar: true" significa que la cifra recibida era de 1 a 10: puede ser "N mil" mal leído o un número del título. No la trates como un dato; como mucho menciona que podría ser un producto con ventas altas sin confirmar.
+- La señal más útil de que un nicho está abierto son los recién llegados: productos con pocas reseñas que ya venden bien. Si los líderes tienen miles de reseñas y nadie nuevo vende, está cerrado.
 - Un precio mediano bajo con muchos productos casi idénticos indica guerra de precios.
-- Ignora productos que no encajen con la búsqueda (libros, accesorios ajenos) al razonar.
 
-Riesgos que debes considerar cuando apliquen: normativa de complementos alimenticios y cosmética en la UE (declaraciones de salud no autorizadas), estacionalidad, dependencia de marcas de farmacia o del propio Amazon como vendedor.
+Riesgos que debes considerar cuando apliquen: normativa de complementos alimenticios y cosmética en la UE (declaraciones de salud no autorizadas), estacionalidad, peso de las marcas de farmacia o del propio Amazon como vendedor.
 
-Escribe en español claro, para alguien que no es analista. Sé concreto: cita productos, cifras y precios del resumen. No inventes datos que no estén en la entrada. "nextSteps" son acciones que la marca puede hacer esta semana.`;
+Usa solo lo que está en la entrada. No deduzcas quién es dueño de una marca, quién la fabrica, si es de Amazon, de dónde es o cuánto lleva a la venta: nada de eso viene en los datos. Si algo no se puede saber con los datos, dilo en vez de suponerlo.
+
+Escribe en español claro, para alguien que no es analista. Sé concreto: cita productos, ventas y precios de la entrada. "nextSteps" son acciones que la marca puede hacer esta semana.`;
 
 function modelInput(
   keyword: string,
   marketplace: AmazonMarketplace,
-  summary: MarketSummary,
   products: MarketProduct[],
   context: string | undefined,
 ): string {
   const ranked = products
-    .filter((product) => product.monthlySales !== null)
+    .filter((product) => product.monthlySales !== null || product.salesUnconfirmed)
     .slice(0, PRODUCTS_FOR_MODEL)
     .map((product) => ({
+      asin: product.asin,
       titulo: product.title,
       precio: product.price,
       ventasMes: product.monthlySales,
+      ventasSinConfirmar: product.salesUnconfirmed,
       reseñas: product.votes,
       valoracion: product.rating,
       posicionOrganica: product.organicPosition,
@@ -79,26 +86,13 @@ function modelInput(
     busqueda: keyword,
     mercado: marketplace.label,
     contextoDeLaMarca: context ?? null,
-    resumen: {
-      productos: summary.products,
-      conDatoDeVentas: summary.withSalesData,
-      ventasMesMinimas: summary.monthlySalesFloor,
-      precio: summary.price,
-      reseñasMedianas: summary.medianVotes,
-      cuotaTop3: summary.top3Share,
-      reciénLlegados: summary.newcomers.map((p) => ({
-        titulo: p.title,
-        ventasMes: p.monthlySales,
-        reseñas: p.votes,
-        precio: p.price,
-      })),
-    },
-    productosConVentas: ranked,
+    productos: ranked,
   });
 }
 
 async function askClaude(input: string): Promise<{
   verdict: NicheVerdict;
+  offNicheAsins: string[];
   costUsd: number;
 }> {
   const client = new Anthropic({
@@ -113,7 +107,7 @@ async function askClaude(input: string): Promise<{
     messages: [{ role: "user", content: input }],
     output_config: {
       effort: "medium",
-      format: betaZodOutputFormat(nicheVerdictSchema),
+      format: betaZodOutputFormat(nicheAnalysisSchema),
     },
     // On a policy decline the API reruns the request on a fallback model it
     // picks by refusal category, inside the same call.
@@ -128,7 +122,8 @@ async function askClaude(input: string): Promise<{
       `El análisis no se pudo completar (${response.stop_reason ?? "sin respuesta"}).`,
     );
   }
-  return { verdict: response.parsed_output, costUsd };
+  const { offNicheAsins, ...verdict } = response.parsed_output;
+  return { verdict, offNicheAsins, costUsd };
 }
 
 /**
@@ -205,6 +200,8 @@ function toMarketProduct(row: ProductRow): MarketProduct {
     isAmazonChoice: row.isAmazonChoice,
     isBestSeller: row.isBestSeller,
     monthlySales: row.monthlySales,
+    salesUnconfirmed: row.salesUnconfirmed,
+    offNiche: row.offNiche,
     organicPosition: row.organicPosition,
     advertised: row.advertised,
   };
@@ -274,20 +271,18 @@ export async function analyzeProductOpportunity(input: {
       seDomain: input.marketplace.seDomain,
     },
   );
-  const products = cleanMarketProducts(items);
-  if (products.length === 0) {
+  const cleaned = cleanMarketProducts(items);
+  if (cleaned.length === 0) {
     throw new AppError(
       "VALIDATION_ERROR",
       "Amazon no muestra productos para esa búsqueda en este mercado.",
     );
   }
-  const summary = summarizeMarket(products);
 
-  const { verdict } = await meterClaude(input.customer, () =>
-    askClaude(
-      modelInput(input.keyword, input.marketplace, summary, products, input.context),
-    ),
+  const { verdict, offNicheAsins } = await meterClaude(input.customer, () =>
+    askClaude(modelInput(input.keyword, input.marketplace, cleaned, input.context)),
   );
+  const products = markOffNiche(cleaned, offNicheAsins);
 
   // Saved before returning: the customer has paid for this result, so it must
   // survive a page change or a second analysis.
