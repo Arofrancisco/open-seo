@@ -16,6 +16,7 @@ import {
   TOP_UP_STEP_EUR,
 } from "@/client/features/billing/HostedBillingContentUtils";
 import { getBillingRouteState } from "@/client/features/billing/route-state";
+import { formatCredits, PAID_PLAN_MONTHLY_CREDITS } from "@/shared/plan-credits";
 import { getCustomerPlanStatus } from "@/client/features/billing/plan-detection";
 import {
   AUTUMN_CHECKOUT_SESSION_PARAMS,
@@ -176,7 +177,7 @@ function BillingPage() {
               <p className="mt-2 text-xs text-amber-600">
                 Te quedan pocos créditos.{" "}
                 {isFreePlan
-                  ? "Mejora tu plan y recibe 8.000 al mes."
+                  ? `Mejora tu plan y recibe ${formatCredits(PAID_PLAN_MONTHLY_CREDITS)} al mes.`
                   : "Compra más créditos abajo."}
               </p>
             ) : null}
@@ -206,7 +207,7 @@ function BillingPage() {
               <ul className="space-y-1.5">
                 {[
                   "Acceso a todas las funciones",
-                  "Incluye 8.000 créditos de uso cada mes",
+                  `Incluye ${formatCredits(PAID_PLAN_MONTHLY_CREDITS)} créditos de uso cada mes`,
                 ].map((item) => (
                   <li
                     key={item}

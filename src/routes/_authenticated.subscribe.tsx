@@ -10,6 +10,7 @@ import { getStandardErrorMessage } from "@/client/lib/error-messages";
 import { getSubscribeRouteState } from "@/client/features/billing/route-state";
 import { getCustomerPlanStatus } from "@/client/features/billing/plan-detection";
 import { normalizeAuthRedirect } from "@/lib/auth-redirect";
+import { formatCredits, PAID_PLAN_MONTHLY_CREDITS } from "@/shared/plan-credits";
 import { useCanManageBilling } from "@/client/features/team/organizationQueries";
 import {
   AUTUMN_CHECKOUT_SESSION_PARAMS,
@@ -25,7 +26,7 @@ const PLAN_FEATURES = [
   "Keyword research, backlinks, seguimiento de posiciones y auditorías de sitio",
   "Servidor MCP y skills de agente para Claude, Cursor y ChatGPT",
   "Integración con Google Search Console",
-  "Incluye 8.000 créditos de uso cada mes",
+  `Incluye ${formatCredits(PAID_PLAN_MONTHLY_CREDITS)} créditos de uso cada mes`,
 ];
 
 // How long the post-checkout "finalizing" screen polls Autumn before giving
