@@ -5,6 +5,11 @@ import { captcha } from "better-auth/plugins";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { isDisposableEmailDomain } from "@/server/auth/disposable-email";
+import { isEmailSignupAllowed } from "@/server/auth/email-signup-access";
+import {
+  EMAIL_SIGNUP_PATH,
+  SIGNUP_ACCESS_CODE_HEADER,
+} from "@/shared/email-signup";
 import * as d1Schema from "@/db/d1/schema";
 import { d1Db } from "@/db/d1/client";
 import { pgDb } from "@/db/pg/client";
@@ -215,13 +220,31 @@ function createAuth() {
           // Hosted only: keep cheap mass-signups off the free plan by rejecting
           // throwaway-inbox domains before the user row is created. Self-hosted
           // has no shared credit pool to protect, so it's left untouched.
-          before: async (user) => {
+          before: async (user, context) => {
             if (
               isHostedAuthMode(env.AUTH_MODE) &&
               isDisposableEmailDomain(user.email)
             ) {
               throw new APIError("BAD_REQUEST", {
                 message: "Please sign up with a non-disposable email address.",
+              });
+            }
+            // Hosted only: public sign-up is Google. Email sign-up needs a
+            // private access code (fail closed when none is configured).
+            if (
+              isHostedAuthMode(env.AUTH_MODE) &&
+              context?.path === EMAIL_SIGNUP_PATH &&
+              !isEmailSignupAllowed(
+                context.request?.headers.get(SIGNUP_ACCESS_CODE_HEADER) ??
+                  context.headers?.get(SIGNUP_ACCESS_CODE_HEADER),
+                Reflect.get(env, "EMAIL_SIGNUP_ACCESS_CODE") as
+                  | string
+                  | undefined,
+              )
+            ) {
+              throw new APIError("FORBIDDEN", {
+                message:
+                  "El registro por correo requiere un código de acceso. Usa «Continuar con Google» o pídelo a Planeta Prime.",
               });
             }
             return { data: user };

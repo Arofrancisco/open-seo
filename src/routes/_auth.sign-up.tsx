@@ -13,6 +13,7 @@ import {
   useTurnstileCaptcha,
 } from "@/client/features/auth/TurnstileWidget";
 import { getFieldError, getFormError } from "@/client/lib/forms";
+import { SIGNUP_ACCESS_CODE_HEADER } from "@/shared/email-signup";
 import { captureClientEvent } from "@/client/lib/posthog";
 import { authClient } from "@/lib/auth-client";
 import { getSignInSearch, getVerifyEmailSearch } from "@/lib/auth-redirect";
@@ -24,6 +25,7 @@ import { z } from "zod";
 
 const signUpSchema = z
   .object({
+    accessCode: z.string().trim().min(1, "Introduce el código de acceso."),
     name: z.string().trim(),
     email: z.string().trim().email("Introduce un email válido."),
     password: z
@@ -62,6 +64,7 @@ function SignUpPage() {
 
   const form = useForm({
     defaultValues: {
+      accessCode: "",
       name: "",
       email: "",
       password: "",
@@ -107,13 +110,14 @@ function SignUpPage() {
           email,
           password: value.password,
           callbackURL: verificationCallbackURL.toString(),
-          ...(isTurnstileEnabled && captchaToken
-            ? {
-                fetchOptions: {
-                  headers: { "x-captcha-response": captchaToken },
-                },
-              }
-            : {}),
+          fetchOptions: {
+            headers: {
+              [SIGNUP_ACCESS_CODE_HEADER]: value.accessCode.trim(),
+              ...(isTurnstileEnabled && captchaToken
+                ? { "x-captcha-response": captchaToken }
+                : {}),
+            },
+          },
         });
 
         if (result.error) {
@@ -229,6 +233,34 @@ function SignUpPage() {
             void form.handleSubmit();
           }}
         >
+          <form.Field name="accessCode">
+            {(field) => {
+              const error = getFieldError(field.state.meta.errors);
+
+              return (
+                <div>
+                  <input
+                    type="text"
+                    className="input input-bordered w-full"
+                    placeholder="Código de acceso..."
+                    value={field.state.value}
+                    onChange={(event) => field.handleChange(event.target.value)}
+                    autoComplete="off"
+                    disabled={!isHostedMode}
+                    required
+                  />
+                  <p className="mt-1 text-xs text-base-content/50">
+                    El registro por correo es solo con código. Si no tienes
+                    uno, vuelve atrás y usa «Continuar con Google».
+                  </p>
+                  {error ? (
+                    <p className="mt-1 text-sm text-error">{error}</p>
+                  ) : null}
+                </div>
+              );
+            }}
+          </form.Field>
+
           <form.Field name="name">
             {(field) => {
               const error = getFieldError(field.state.meta.errors);
