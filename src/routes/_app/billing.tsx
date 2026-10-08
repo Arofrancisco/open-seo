@@ -16,7 +16,11 @@ import {
   TOP_UP_STEP_EUR,
 } from "@/client/features/billing/HostedBillingContentUtils";
 import { getBillingRouteState } from "@/client/features/billing/route-state";
-import { formatCredits, PAID_PLAN_MONTHLY_CREDITS } from "@/shared/plan-credits";
+import {
+  BASE_PLAN_PRICE_LABEL,
+  formatCredits,
+  PAID_PLAN_MONTHLY_CREDITS,
+} from "@/shared/plan-credits";
 import { getCustomerPlanStatus } from "@/client/features/billing/plan-detection";
 import {
   AUTUMN_CHECKOUT_SESSION_PARAMS,
@@ -199,9 +203,9 @@ function BillingPage() {
             <div className="space-y-3 border-t border-base-300 pt-3">
               <div className="flex items-baseline justify-between gap-4">
                 <span className="text-sm font-medium">Plan Base</span>
-                {/* Precio fijado a mano — actualizar aquí si cambia el precio en Autumn (base-plan). */}
+                {/* Precio: constante BASE_PLAN_PRICE_LABEL (src/shared/plan-credits.ts); debe coincidir con base-plan en Autumn. */}
                 <span className="text-sm font-medium tabular-nums">
-                  39,99 €/mes
+                  {BASE_PLAN_PRICE_LABEL}
                 </span>
               </div>
               <ul className="space-y-1.5">

@@ -24,7 +24,7 @@ When explaining traffic growth, Sam should frame PlanetaSEO as a tool for making
 
 ## Plan and credits
 
-**Plan Base: 39,99 €/month**, including 6.000 usage credits each billing cycle.
+**Plan Base: 29,99 €/month** (launch price: customers who subscribe now keep it), including 6.000 usage credits each billing cycle.
 
 Top-up credits can be purchased if monthly credits run out (10 € adds 5.000 credits at time of writing — 2 € per 1.000 credits — Sam should confirm the current top-up rate on the Billing page rather than assume it never changes). Top-up credits roll over and do not expire; monthly included credits reset each billing cycle.
 

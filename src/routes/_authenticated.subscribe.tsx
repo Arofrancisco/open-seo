@@ -10,7 +10,11 @@ import { getStandardErrorMessage } from "@/client/lib/error-messages";
 import { getSubscribeRouteState } from "@/client/features/billing/route-state";
 import { getCustomerPlanStatus } from "@/client/features/billing/plan-detection";
 import { normalizeAuthRedirect } from "@/lib/auth-redirect";
-import { formatCredits, PAID_PLAN_MONTHLY_CREDITS } from "@/shared/plan-credits";
+import {
+  BASE_PLAN_PRICE_LABEL,
+  formatCredits,
+  PAID_PLAN_MONTHLY_CREDITS,
+} from "@/shared/plan-credits";
 import { useCanManageBilling } from "@/client/features/team/organizationQueries";
 import {
   AUTUMN_CHECKOUT_SESSION_PARAMS,
@@ -250,9 +254,9 @@ function SubscribePage() {
       <div className="rounded-lg border border-base-300 p-5 space-y-4">
         <div className="flex items-baseline justify-between gap-4">
           <span className="font-semibold">Plan Base</span>
-          {/* Precio fijado a mano — actualizar aquí si cambia el precio en Autumn (base-plan). */}
+          {/* Precio: constante BASE_PLAN_PRICE_LABEL (src/shared/plan-credits.ts); debe coincidir con base-plan en Autumn. */}
           <span className="text-lg font-semibold tabular-nums">
-            39,99 €/mes
+            {BASE_PLAN_PRICE_LABEL}
           </span>
         </div>
 
