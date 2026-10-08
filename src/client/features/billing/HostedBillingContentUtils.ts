@@ -1,8 +1,13 @@
-// Top-ups are billed in packs of 1,000 credits at 2 € each, so only even
-// amounts map to whole packs. An odd amount would be rounded up by Stripe.
-export const TOP_UP_MIN_EUR = 10;
-export const TOP_UP_MAX_EUR = 98;
-export const TOP_UP_STEP_EUR = 2;
+import { TOPUP_PACK_PRICE_EUR } from "@/shared/billing";
+
+// Top-ups are billed in packs of 1,000 credits at TOPUP_PACK_PRICE_EUR each, so
+// only multiples of that price map to whole packs. Any other amount would be
+// rounded up by Stripe.
+export const TOP_UP_STEP_EUR = TOPUP_PACK_PRICE_EUR;
+export const TOP_UP_MIN_EUR = 3 * TOP_UP_STEP_EUR;
+export const TOP_UP_MAX_EUR = 33 * TOP_UP_STEP_EUR;
+// Default suggestion: 6 packs = 6,000 credits, the size of the monthly plan.
+export const TOP_UP_DEFAULT_EUR = 6 * TOP_UP_STEP_EUR;
 
 export function parseTopUpAmount(value: string) {
   const trimmed = value.trim();
@@ -10,7 +15,7 @@ export function parseTopUpAmount(value: string) {
   if (!/^\d+$/.test(trimmed)) {
     return {
       isValid: false,
-      parsed: 20,
+      parsed: TOP_UP_DEFAULT_EUR,
     };
   }
 
@@ -23,6 +28,6 @@ export function parseTopUpAmount(value: string) {
 
   return {
     isValid,
-    parsed: isValid ? parsed : 20,
+    parsed: isValid ? parsed : TOP_UP_DEFAULT_EUR,
   };
 }

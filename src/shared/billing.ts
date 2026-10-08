@@ -14,8 +14,15 @@ export const AUTUMN_MANAGED_ACCESS_FEATURE_ID = "managed_service_access";
 export const AUTUMN_SEO_DATA_BALANCE_FEATURE_ID = "usage_credits";
 export const AUTUMN_SEO_DATA_TOPUP_BALANCE_FEATURE_ID = "topup_credits";
 export const AUTUMN_SEO_DATA_CREDITS_PER_USD = 1000;
-// Must match the credit-top-up price in Autumn (2 € per 1,000 topup credits).
-export const TOPUP_CREDITS_PER_EUR = 500;
+// Top-ups are sold in packs. Must match the credit-top-up price in Autumn
+// (TOPUP_PACK_PRICE_EUR per TOPUP_PACK_CREDITS topup credits).
+export const TOPUP_PACK_CREDITS = 1000;
+export const TOPUP_PACK_PRICE_EUR = 3;
+
+/** Credits received for a top-up of `eur` euros (a whole number of packs). */
+export function topUpCreditsForEur(eur: number): number {
+  return Math.round((eur / TOPUP_PACK_PRICE_EUR) * TOPUP_PACK_CREDITS);
+}
 export const SEO_DATA_COST_MARKUP = 1.28;
 export const LOW_CREDITS_THRESHOLD_USD = 0.25;
 

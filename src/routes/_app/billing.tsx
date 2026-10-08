@@ -11,6 +11,7 @@ import { BillingUsageChart } from "@/client/features/billing/BillingUsageChart";
 import { BillingFeatureBreakdown } from "@/client/features/billing/BillingFeatureBreakdown";
 import {
   parseTopUpAmount,
+  TOP_UP_DEFAULT_EUR,
   TOP_UP_MAX_EUR,
   TOP_UP_MIN_EUR,
   TOP_UP_STEP_EUR,
@@ -31,7 +32,9 @@ import {
   AUTUMN_SEO_DATA_BALANCE_FEATURE_ID,
   LOW_CREDITS_THRESHOLD_USD,
   AUTUMN_SEO_DATA_CREDITS_PER_USD,
-  TOPUP_CREDITS_PER_EUR,
+  TOPUP_PACK_CREDITS,
+  TOPUP_PACK_PRICE_EUR,
+  topUpCreditsForEur,
   AUTUMN_SEO_DATA_TOP_UP_PLAN_ID,
   AUTUMN_SEO_DATA_TOPUP_BALANCE_FEATURE_ID,
   autumnSeoDataCreditsToUsd,
@@ -48,7 +51,7 @@ export const Route = createFileRoute("/_app/billing")({
 
 function BillingPage() {
   const { data: session, isPending: isSessionPending } = useSession();
-  const [topUpAmount, setTopUpAmount] = useState("20");
+  const [topUpAmount, setTopUpAmount] = useState(String(TOP_UP_DEFAULT_EUR));
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -279,8 +282,10 @@ function BillingPage() {
             <div>
               <span className="font-semibold">Comprar créditos</span>
               <p className="mt-1 text-sm text-base-content/60">
-                2 € por cada 1.000 créditos. Mínimo {TOP_UP_MIN_EUR} € (
-                {(TOP_UP_MIN_EUR * TOPUP_CREDITS_PER_EUR).toLocaleString("es-ES")}{" "}
+                {TOPUP_PACK_PRICE_EUR} € por cada{" "}
+                {TOPUP_PACK_CREDITS.toLocaleString("es-ES")} créditos. Mínimo{" "}
+                {TOP_UP_MIN_EUR} € (
+                {topUpCreditsForEur(TOP_UP_MIN_EUR).toLocaleString("es-ES")}{" "}
                 créditos). Los créditos de recarga no caducan y se usan después
                 de los mensuales.
               </p>
@@ -302,15 +307,15 @@ function BillingPage() {
               </div>
               {topUpAmount.trim() !== "" && !isValidTopUp ? (
                 <p className="mt-1 text-xs text-error">
-                  Introduce un importe par entre {TOP_UP_MIN_EUR} y{" "}
-                  {TOP_UP_MAX_EUR} € (paquetes de 1.000 créditos a 2 €).
+                  Introduce un importe múltiplo de {TOP_UP_STEP_EUR} entre{" "}
+                  {TOP_UP_MIN_EUR} y {TOP_UP_MAX_EUR} € (paquetes de{" "}
+                  {TOPUP_PACK_CREDITS.toLocaleString("es-ES")} créditos a{" "}
+                  {TOPUP_PACK_PRICE_EUR} €).
                 </p>
               ) : isValidTopUp ? (
                 <p className="mt-1 text-xs text-base-content/60">
                   Recibirás{" "}
-                  {(parsedTopUpAmount * TOPUP_CREDITS_PER_EUR).toLocaleString(
-                    "es-ES",
-                  )}{" "}
+                  {topUpCreditsForEur(parsedTopUpAmount).toLocaleString("es-ES")}{" "}
                   créditos. En el pago verás {parsedTopUpAmount / TOP_UP_STEP_EUR}{" "}
                   paquetes de 1.000 créditos.
                 </p>
@@ -331,9 +336,7 @@ function BillingPage() {
                       featureQuantities: [
                         {
                           featureId: AUTUMN_SEO_DATA_TOPUP_BALANCE_FEATURE_ID,
-                          quantity: Math.round(
-                            parsedTopUpAmount * TOPUP_CREDITS_PER_EUR,
-                          ),
+                          quantity: topUpCreditsForEur(parsedTopUpAmount),
                         },
                       ],
                     }),
