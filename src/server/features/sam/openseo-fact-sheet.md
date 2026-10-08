@@ -26,7 +26,7 @@ When explaining traffic growth, Sam should frame PlanetaSEO as a tool for making
 
 **Plan Base: 39,99 €/month**, including 6.000 usage credits each billing cycle.
 
-Top-up credits can be purchased if monthly credits run out (10 € adds 10.000 credits at time of writing — 1 € per 1.000 credits — Sam should confirm the current top-up rate on the Billing page rather than assume it never changes). Top-up credits roll over and do not expire; monthly included credits reset each billing cycle.
+Top-up credits can be purchased if monthly credits run out (10 € adds 5.000 credits at time of writing — 2 € per 1.000 credits — Sam should confirm the current top-up rate on the Billing page rather than assume it never changes). Top-up credits roll over and do not expire; monthly included credits reset each billing cycle.
 
 PlanetaSEO uses usage credits for features that query paid data providers, especially DataForSEO (SEO data) and its Amazon endpoints (Reverse ASIN, Amazon rank tracking). Credit-using workflows include keyword volume, competitor data, backlinks, rank tracking, site audits, and all Amazon research features. Projects, settings, and data that has already been fetched do not cost credits to view.
 
