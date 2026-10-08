@@ -24,5 +24,5 @@ export const SUBSCRIBE_WAIVER_LABEL =
 // Shown by Stripe right under the pay button, on every checkout (subscription,
 // upgrade and top-up).
 export const CHECKOUT_CONSENT_MESSAGE =
-  `Al pagar, solicitas acceso inmediato al servicio y reconoces que, una vez prestado o consumido (por ejemplo, créditos gastados), pierdes el derecho de desistimiento. ` +
+  `Precio final con IVA incluido. Al pagar, solicitas acceso inmediato al servicio y reconoces que, una vez prestado o consumido (por ejemplo, créditos gastados), pierdes el derecho de desistimiento. ` +
   `Garantía de ${GUARANTEE_DAYS} días en el primer cobro de la suscripción: reembolso íntegro si has usado hasta el ${GUARANTEE_FULL_REFUND_MAX_USAGE_PERCENT} % de los créditos del plan y proporcional si has usado más.`;

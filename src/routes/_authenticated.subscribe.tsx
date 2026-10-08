@@ -12,6 +12,7 @@ import { getCustomerPlanStatus } from "@/client/features/billing/plan-detection"
 import { normalizeAuthRedirect } from "@/lib/auth-redirect";
 import {
   BASE_PLAN_PRICE_LABEL,
+  BASE_PLAN_TAX_NOTE,
   formatCredits,
   PAID_PLAN_MONTHLY_CREDITS,
 } from "@/shared/plan-credits";
@@ -262,7 +263,10 @@ function SubscribePage() {
           <span className="font-semibold">Plan Base</span>
           {/* Precio: constante BASE_PLAN_PRICE_LABEL (src/shared/plan-credits.ts); debe coincidir con base-plan en Autumn. */}
           <span className="text-lg font-semibold tabular-nums">
-            {BASE_PLAN_PRICE_LABEL}
+            {BASE_PLAN_PRICE_LABEL}{" "}
+            <span className="text-xs font-normal text-base-content/50">
+              ({BASE_PLAN_TAX_NOTE})
+            </span>
           </span>
         </div>
 

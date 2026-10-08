@@ -18,6 +18,7 @@ import {
 import { getBillingRouteState } from "@/client/features/billing/route-state";
 import {
   BASE_PLAN_PRICE_LABEL,
+  BASE_PLAN_TAX_NOTE,
   formatCredits,
   PAID_PLAN_MONTHLY_CREDITS,
 } from "@/shared/plan-credits";
@@ -205,7 +206,10 @@ function BillingPage() {
                 <span className="text-sm font-medium">Plan Base</span>
                 {/* Precio: constante BASE_PLAN_PRICE_LABEL (src/shared/plan-credits.ts); debe coincidir con base-plan en Autumn. */}
                 <span className="text-sm font-medium tabular-nums">
-                  {BASE_PLAN_PRICE_LABEL}
+                  {BASE_PLAN_PRICE_LABEL}{" "}
+                  <span className="text-xs font-normal text-base-content/50">
+                    ({BASE_PLAN_TAX_NOTE})
+                  </span>
                 </span>
               </div>
               <ul className="space-y-1.5">

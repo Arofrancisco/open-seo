@@ -6,6 +6,7 @@ export const FREE_PLAN_CREDITS = 150;
 export const PAID_PLAN_MONTHLY_CREDITS = 6000;
 // Display price of the paid plan. Hand-kept: must match base-plan in Autumn.
 export const BASE_PLAN_PRICE_LABEL = "29,99 €/mes";
+export const BASE_PLAN_TAX_NOTE = "IVA incluido";
 
 /** "1090" -> "1.090": Spanish grouping, which toLocaleString skips under 10,000. */
 export function formatCredits(credits: number): string {
