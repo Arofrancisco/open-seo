@@ -7,6 +7,7 @@
 // proportional to the credits not used. Renewals and top-ups are not covered
 // by the guarantee (top-up credits can be refunded in full only while none of
 // them has been spent, within 14 days).
+export const CONDITIONS_URL = "https://planetaprime.com/planetaseo-condiciones/";
 export const GUARANTEE_DAYS = 14;
 export const GUARANTEE_FULL_REFUND_MAX_USAGE_PERCENT = 20;
 
@@ -25,4 +26,5 @@ export const SUBSCRIBE_WAIVER_LABEL =
 // upgrade and top-up).
 export const CHECKOUT_CONSENT_MESSAGE =
   `Precio final con IVA incluido. Al pagar, solicitas acceso inmediato al servicio y reconoces que, una vez prestado o consumido (por ejemplo, créditos gastados), pierdes el derecho de desistimiento. ` +
-  `Garantía de ${GUARANTEE_DAYS} días en el primer cobro de la suscripción: reembolso íntegro si has usado hasta el ${GUARANTEE_FULL_REFUND_MAX_USAGE_PERCENT} % de los créditos del plan y proporcional si has usado más.`;
+  `Garantía de ${GUARANTEE_DAYS} días en el primer cobro de la suscripción: reembolso íntegro si has usado hasta el ${GUARANTEE_FULL_REFUND_MAX_USAGE_PERCENT} % de los créditos del plan y proporcional si has usado más. ` +
+  `Condiciones: ${CONDITIONS_URL}`;

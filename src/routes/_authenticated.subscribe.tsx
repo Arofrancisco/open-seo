@@ -18,6 +18,7 @@ import {
 } from "@/shared/plan-credits";
 import {
   buildGuaranteeTooltip,
+  CONDITIONS_URL,
   GUARANTEE_TITLE,
   SUBSCRIBE_WAIVER_LABEL,
 } from "@/shared/refund-policy";
@@ -310,7 +311,17 @@ function SubscribePage() {
                 checked={acceptedWaiver}
                 onChange={(event) => setAcceptedWaiver(event.target.checked)}
               />
-              <span>{SUBSCRIBE_WAIVER_LABEL}</span>
+              <span>
+                {SUBSCRIBE_WAIVER_LABEL}{" "}
+                <a
+                  className="underline decoration-dotted underline-offset-4 hover:text-base-content"
+                  href={CONDITIONS_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Condiciones de contratación
+                </a>
+              </span>
             </label>
             <button
               className="btn btn-soft w-full"
@@ -336,7 +347,16 @@ function SubscribePage() {
               {GUARANTEE_TITLE}
             </span>
           </span>
-          . Cancela cuando quieras. Pago seguro con Stripe.
+          . Cancela cuando quieras. Pago seguro con Stripe.{" "}
+          <a
+            className="underline decoration-dotted underline-offset-4 hover:text-base-content"
+            href={CONDITIONS_URL}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Condiciones
+          </a>
+          .
         </p>
       </div>
 

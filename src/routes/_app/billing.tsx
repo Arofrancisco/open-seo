@@ -16,6 +16,7 @@ import {
   TOP_UP_STEP_EUR,
 } from "@/client/features/billing/HostedBillingContentUtils";
 import { getBillingRouteState } from "@/client/features/billing/route-state";
+import { CONDITIONS_URL, GUARANTEE_TITLE } from "@/shared/refund-policy";
 import {
   BASE_PLAN_PRICE_LABEL,
   BASE_PLAN_TAX_NOTE,
@@ -240,6 +241,18 @@ function BillingPage() {
               >
                 Mejorar plan
               </button>
+              <p className="text-center text-xs text-base-content/50">
+                {GUARANTEE_TITLE}.{" "}
+                <a
+                  className="underline decoration-dotted underline-offset-4 hover:text-base-content"
+                  href={CONDITIONS_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Condiciones de contratación
+                </a>
+                .
+              </p>
             </div>
           ) : (
             <button
