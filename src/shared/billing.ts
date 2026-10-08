@@ -1,3 +1,4 @@
+import { CHECKOUT_CONSENT_MESSAGE } from "@/shared/refund-policy";
 export const BILLING_ROUTE = "/billing";
 export const SUBSCRIBE_ROUTE = "/subscribe";
 
@@ -26,6 +27,8 @@ export const AUTUMN_CHECKOUT_SESSION_PARAMS = {
   tax_id_collection: { enabled: true },
   billing_address_collection: "required",
   customer_update: { name: "auto", address: "auto" },
+  // Withdrawal-waiver notice under the pay button (see refund-policy.ts).
+  custom_text: { submit: { message: CHECKOUT_CONSENT_MESSAGE } },
 } as const;
 
 export function roundUsdForBilling(value: number) {

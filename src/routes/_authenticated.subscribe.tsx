@@ -15,6 +15,11 @@ import {
   formatCredits,
   PAID_PLAN_MONTHLY_CREDITS,
 } from "@/shared/plan-credits";
+import {
+  buildGuaranteeTooltip,
+  GUARANTEE_TITLE,
+  SUBSCRIBE_WAIVER_LABEL,
+} from "@/shared/refund-policy";
 import { useCanManageBilling } from "@/client/features/team/organizationQueries";
 import {
   AUTUMN_CHECKOUT_SESSION_PARAMS,
@@ -57,6 +62,7 @@ function SubscribePage() {
   const { upgrade: isUpgradeFlow, redirect, checkout } = Route.useSearch();
   const { data: session } = useSession();
   const [isAttaching, setIsAttaching] = useState(false);
+  const [acceptedWaiver, setAcceptedWaiver] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [finalizingTimedOut, setFinalizingTimedOut] = useState(false);
   const checkoutCompleted = checkout === "success";
@@ -292,13 +298,24 @@ function SubscribePage() {
         {error ? <p className="text-sm text-error">{error}</p> : null}
 
         {canManageBilling ? (
-          <button
-            className="btn btn-soft w-full"
-            disabled={isAttaching}
-            onClick={() => void handleSubscribe()}
-          >
-            {isAttaching ? "Redirigiendo..." : "Suscribirse"}
-          </button>
+          <div className="space-y-3">
+            <label className="flex cursor-pointer items-start gap-2 text-xs text-base-content/70">
+              <input
+                type="checkbox"
+                className="checkbox checkbox-xs mt-0.5"
+                checked={acceptedWaiver}
+                onChange={(event) => setAcceptedWaiver(event.target.checked)}
+              />
+              <span>{SUBSCRIBE_WAIVER_LABEL}</span>
+            </label>
+            <button
+              className="btn btn-soft w-full"
+              disabled={isAttaching || !acceptedWaiver}
+              onClick={() => void handleSubscribe()}
+            >
+              {isAttaching ? "Redirigiendo..." : "Suscribirse"}
+            </button>
+          </div>
         ) : (
           <p className="text-sm text-base-content/60">
             Solo el propietario de la organización puede suscribirse. Pídele que
@@ -309,10 +326,10 @@ function SubscribePage() {
         <p className="text-center text-xs text-base-content/50">
           <span
             className="tooltip before:max-w-60 before:whitespace-normal"
-            data-tip={`¿No es para ti? Escribe a ${SUPPORT_EMAIL} en los 30 días siguientes al cobro y te devolvemos la suscripción.`}
+            data-tip={buildGuaranteeTooltip(SUPPORT_EMAIL)}
           >
             <span className="cursor-help underline decoration-dotted">
-              Garantía de devolución de 30 días
+              {GUARANTEE_TITLE}
             </span>
           </span>
           . Cancela cuando quieras. Pago seguro con Stripe.

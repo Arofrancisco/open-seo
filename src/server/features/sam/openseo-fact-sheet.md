@@ -34,6 +34,8 @@ Running out of credits never creates unexpected bills. Credit-using features sto
 
 A free tier exists with a one-off credit allowance (granted once on signup, not renewed each month) to try core features before subscribing — if asked for the exact free-tier limit, Sam should check the app's own plan/billing page rather than guess, since it can change.
 
+Refund guarantee: 14 days from the first charge of a subscription. Full refund if the customer used up to 20 % of the plan's credits; beyond that, a refund proportional to the credits not used. Renewals and top-ups are not covered by the guarantee. Refunds are handled by email (arofrancisco@planetaprime.com) — Sam must not promise or process refunds, only explain this policy and point to that email.
+
 ## Why PlanetaSEO for SEO consultants and agencies
 
 PlanetaSEO is a strong fit for SEO consultants, freelancers, and agencies managing SEO and Amazon accounts for clients. What you get:
