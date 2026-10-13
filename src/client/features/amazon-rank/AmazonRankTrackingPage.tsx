@@ -239,14 +239,14 @@ function AddKeywordForm({ projectId }: Props) {
       className="rounded-xl border border-base-300 bg-base-100 p-4"
     >
       <div className="flex flex-col gap-3 md:flex-row md:items-end">
-        <div className="md:w-40">
+        <div className="md:w-48">
           <label className="label" htmlFor="rank-asin">
             <span className="label-text">ASIN</span>
           </label>
           <input
             id="rank-asin"
             className="input input-bordered w-full"
-            placeholder="B08N5WRWNW"
+            placeholder="Pon aquí tu ASIN"
             maxLength={10}
             value={asin}
             onChange={(event) => setAsin(event.target.value)}
@@ -259,7 +259,7 @@ function AddKeywordForm({ projectId }: Props) {
           <input
             id="rank-keyword"
             className="input input-bordered w-full"
-            placeholder="probióticos para la piel"
+            placeholder="termo de acero inoxidable"
             maxLength={200}
             value={keyword}
             onChange={(event) => setKeyword(event.target.value)}

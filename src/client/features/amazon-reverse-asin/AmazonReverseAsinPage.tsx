@@ -163,7 +163,7 @@ export function AmazonReverseAsinPage({ projectId }: Props) {
               id="reverse-asin-input"
               type="text"
               className={`input input-bordered w-full ${validationError ? "input-error" : ""}`}
-              placeholder="B08N5WRWNW"
+              placeholder="Pon aquí tu ASIN"
               value={asin}
               maxLength={10}
               onChange={(event) => {
